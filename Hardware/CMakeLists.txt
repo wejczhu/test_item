@@ -18,5 +18,5 @@ add_library(Hardware "${SOURCE}")
 # so that we will find TutorialConfig.h
 target_include_directories(Hardware PUBLIC
                           "./Inc"
+                          "${PROJECT_SOURCE_DIR}/Core/Inc"
                           )
-

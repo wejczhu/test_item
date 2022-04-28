@@ -3,31 +3,13 @@
 #define _UART_USER_H_
 
 #include "Uart.h"
+#include "DataHandler.h"
+
 #include <thread>
-#include <map>
 
 using namespace LinuxSerial;
 using namespace std;
 //using namespace Storage;
-
-
-
-enum ClimateDataHeadE
-{
-    VERSION_NUMBER = 1,
-    ZONE_NUMBER = 2,
-    LONGITUDE = 3,
-    LATITUDE = 4,
-    HEIGHT = 5,
-    SERVICE_TYPE = 6,
-    EQUIPMENT_SYMBOL = 7,
-    EQUIPMENT_ID = 8,
-    MEASURE_TIME = 9,
-    FRAME_SYMBOL = 10,
-    MEASURE_ELEMENT_NUMBER = 11,
-    EQUIPMENT_ELEMENT_NUMBER = 12,
-    MAIN_DATA_START = 13
-};
 
 class UartUser
 {
@@ -46,33 +28,6 @@ public:
         int mStoreFd_1_hour;
     };
 
-
-    struct ClimateDataHead
-    {
-        string mDataVersionNumber;
-        string mDataZoneNumber;
-        string mDataLongitude;
-        string mDataLatitude;
-        string mDataHeight;
-        string mDataServiceType;
-        string mDataEquipmentSymbol;
-        string mDataEquipmentId;
-        string mDataMeasureTime;
-        string mDataFrameSymbol;
-        string mDataMeasureElementNumber;
-        string mDataEquipmentElementNumber;
-        //string mDataMainData_start;
-    };
-
-    struct ClimateDataMain
-    {
-        map<string, string> mMeasureElement;
-        string mQualityControl;
-        map<string, int> mStateVariable;
-    };
-
-    
-
     UartUser();
     ~UartUser();
 
@@ -85,23 +40,12 @@ public:
     void StoreData(std::string& data);
 
     void CreateDirectory(std::string path);
-
-    std::vector<std::string> SplitDataFrame(std::string data);
-
-    void ParseData(std::vector<std::string> data);
-
-    void PrintDataHead();
-
-    void PrintDataMain();
-
 private:
     SerialPort* mSerialPort;
     std::thread* mThread;
     bool mIsRunning;
     FileDescriptor mFd;
-    ClimateDataHead mClimateDataHead;
-    ClimateDataMain mClimateDataMain;
-    std::string mCheckNum;
+    DataHandler mDataHandler;
 
     // TODO:
     // Handle following data properly!
