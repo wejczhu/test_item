@@ -1,20 +1,20 @@
-// Authors: Wei Jianxing <Jx.Wei@outlook.com>
+// // Authors: Wei Jianxing <Jx.Wei@outlook.com>
 
-#include "DataHandler.h"
-#include <cstdio>
-#include <cstdlib>
-#include <unistd.h>
+// #include "DataHandler.h"
+// #include <cstdio>
+// #include <cstdlib>
+// #include <unistd.h>
 
-using namespace Storage;
+// using namespace Storage;
 
-bool DataHandler::Write(int fd, std::string data)
-{
-    write(fd, &data, data.length());
-    return true;
-}
+// bool DataHandler::Write(int fd, std::string data)
+// {
+//     write(fd, &data, data.length());
+//     return true;
+// }
 
-bool DataHandler::Read(std::string& data)
-{
-    return true;
-}
+// bool DataHandler::Read(std::string& data)
+// {
+//     return true;
+// }
 

@@ -10,7 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # add the Hardware library
 add_subdirectory(Hardware)
 
-add_subdirectory(Storage)
+add_subdirectory(Core)
 
 # add the executable
 add_executable(test_item main.cpp)
@@ -18,14 +18,14 @@ add_executable(test_item main.cpp)
 # Add the library to test_item project
 target_link_libraries(test_item PUBLIC
                       Hardware
-                      Storage
+                      Core
                       pthread
                       )
 
 target_include_directories(test_item PUBLIC
                           "${PROJECT_BINARY_DIR}"
                           "${PROJECT_SOURCE_DIR}/Hardware"
-                          "${PROJECT_SOURCE_DIR}/Storage"
+                          "${PROJECT_SOURCE_DIR}/Core"
                           )
 
 

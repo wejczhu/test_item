@@ -1,25 +1,25 @@
-// Authors: Wei Jianxing <Jx.Wei@outlook.com>
+// // Authors: Wei Jianxing <Jx.Wei@outlook.com>
 
-#ifndef _DATA_HANDLER_H_
-#define _DATA_HANDLER_H_
+// #ifndef _DATA_HANDLER_H_
+// #define _DATA_HANDLER_H_
 
-#include <string>
+// #include <string>
 
-namespace Storage
-{
+// namespace Storage
+// {
 
-class DataHandler
-{
-public:
-    DataHandler() = default;
-    ~DataHandler() = default;
+// class DataHandler
+// {
+// public:
+//     DataHandler() = default;
+//     ~DataHandler() = default;
 
-    bool Write(int fd, std::string data);
+//     bool Write(int fd, std::string data);
 
-    bool Read(std::string& data);
+//     bool Read(std::string& data);
 
-};
+// };
 
-} // namespace Storage
+// } // namespace Storage
 
-#endif // _DATA_HANDLER_H_
+// #endif // _DATA_HANDLER_H_
