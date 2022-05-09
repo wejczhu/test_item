@@ -3,6 +3,11 @@
 #include <iostream>
 #include <string.h>
 
+CommandDataHandler::CommandDataHandler(CoreController* controller)
+{
+    mController = controller;
+}
+
 void CommandDataHandler::ParseData(std::vector<std::string> data)
 {
     string command = data[0];
@@ -50,15 +55,15 @@ void CommandDataHandler::ParseData(std::vector<std::string> data)
     }
     else if(command.compare(std::string(COMMAND_DATE)) == 0)
     {
-        std::cout << "COMMAND_DATE" << std::endl;
+        mController->HandleSystemDate(data);
     }
     else if(command.compare(std::string(COMMAND_TIME)) == 0)
     {
-        std::cout << "COMMAND_TIME" << std::endl;
+        mController->HandleSystemTime(data);
     }
     else if(command.compare(std::string(COMMAND_DATE_AND_TIME)) == 0)
     {
-        std::cout << "COMMAND_DATE_AND_TIME" << std::endl;
+        mController->HandleSystemDateAndTime(data);
     }
     else if(command.compare(std::string(COMMAND_FACILITY_TIME_INTERVAL)) == 0)
     {

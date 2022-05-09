@@ -4,6 +4,7 @@
 
 #include "Uart.h"
 #include "DataHandler.h"
+#include "CoreController.h"
 
 #include <thread>
 
@@ -28,7 +29,7 @@ public:
         int mStoreFd_1_hour;
     };
 
-    UartUser();
+    UartUser(DataHandler* dataHandler);
     ~UartUser();
 
     void Run();
@@ -40,12 +41,14 @@ public:
     void StoreData(std::string& data);
 
     void CreateDirectory(std::string path);
+
+    void SendData(std::string data);
 private:
     SerialPort* mSerialPort;
     std::thread* mThread;
     bool mIsRunning;
     FileDescriptor mFd;
-    DataHandler mDataHandler;
+    DataHandler* mDataHandler;
 
     // TODO:
     // Handle following data properly!

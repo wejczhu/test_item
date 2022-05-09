@@ -9,7 +9,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # add the Hardware library
 add_subdirectory(Hardware)
-
 add_subdirectory(Core)
 
 # add the executable

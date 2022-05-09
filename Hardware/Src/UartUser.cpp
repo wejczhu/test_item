@@ -49,11 +49,11 @@ void UartUser::Initialize()
     }
 }
 
-UartUser::UartUser()
+UartUser::UartUser(DataHandler* dataHandler)
 : mSerialPort(nullptr)
 , mThread(nullptr)
 , mFd()
-, mDataHandler()
+, mDataHandler(dataHandler)
 {
     Initialize();
 }
@@ -78,8 +78,8 @@ void UartUser::Run()
     {
         mSerialPort->Read(readBuffer);
         //std::cout << readBuffer << std::endl;
-        vector<string> data = mDataHandler.SplitDataFrame(readBuffer);
-        mDataHandler.ParseData(data);
+        vector<string> data = mDataHandler->SplitDataFrame(readBuffer);
+        mDataHandler->ParseData(data);
 
         StoreData(readBuffer);
     }
@@ -105,6 +105,12 @@ void UartUser::StoreData(std::string &data)
     {
         perror("Write data");
     }
+}
+
+void UartUser::SendData(std::string data)
+{
+    mSerialPort->Write(data);
+    mSerialPort->Write("\n");
 }
 
 void UartUser::CreateDirectory(std::string path)

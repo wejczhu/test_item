@@ -2,6 +2,7 @@
 
 #include "UartUser.h"
 #include "Ethernet.h"
+#include "CoreController.h"
 
 
 #include <cstdlib>
@@ -34,7 +35,8 @@ int main(int argc, char *argv[])
     //     std::cout << "regist successful " << std::endl;
     // }
 
-    UartUser *uartUser = new UartUser();
+    CoreController* coreController = new CoreController();
+
     
     //Ethernet *ethernet = new Ethernet();
 
@@ -48,8 +50,11 @@ int main(int argc, char *argv[])
     //delete ethernet;
     //ethernet = nullptr;
     
-    delete uartUser;
-    uartUser = nullptr;
+    //delete uartUser;
+    //uartUser = nullptr;
+
+    delete coreController;
+    coreController = nullptr;
 
     // sleep(20);
 

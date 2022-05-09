@@ -2,13 +2,17 @@
 
 #include <iostream>
 
+ClimateDataHandler::ClimateDataHandler(CoreController* controller)
+{
+    mController = controller;
+}
+
 void ClimateDataHandler::ParseData(std::vector<std::string> data)
 {
-    // check if data is valid
-    // TODO : remove \n
+    // Check if data is valid
     if (data.front() != "BG" || data.back() != "ED")
     {
-        std::cout << "data is not valid" << std::endl;
+        std::cout << "Data is invalid, please double check" << std::endl;
         return;
     }
 
