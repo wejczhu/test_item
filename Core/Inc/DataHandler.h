@@ -80,7 +80,7 @@ public:
 public:
     DataHandler() = default;
     ~DataHandler() = default;
-    virtual void ParseData(vector<std::string> data) = 0;
+    virtual void ParseData(vector<std::string> data, std::string originalData) = 0;
 
     std::vector<std::string> SplitDataFrame(std::string data);
 

@@ -3,7 +3,7 @@
 #include "UartUser.h"
 #include "Ethernet.h"
 #include "CoreController.h"
-
+#include "DataStorageUnit.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -16,24 +16,13 @@
 
 #include <signal.h>
 
-void handler(int sig)
-{
-    std::cout << "get signal!!!!!!!!" << std::endl;
-}
+
 
 using namespace LinuxSerial;
 
 int main(int argc, char *argv[])
 {
 
-    // if (signal(SIGINT, handler) == SIG_ERR)
-    // {
-    //     perror("signal");
-    // }
-    // else
-    // {
-    //     std::cout << "regist successful " << std::endl;
-    // }
 
     CoreController* coreController = new CoreController();
 

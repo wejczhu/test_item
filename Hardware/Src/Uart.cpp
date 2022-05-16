@@ -108,7 +108,7 @@ void SerialPort::SetTimeout(int32_t timeout_ms) {
         //THROW_EXCEPT(std::string() + "timeout_ms provided to " + __PRETTY_FUNCTION__ + " was > 25500, which is invalid.");
     if(mState == State::OPEN)
     {
-        
+
     }
         //THROW_EXCEPT(std::string() + __PRETTY_FUNCTION__ + " called while state == OPEN.");
 
@@ -264,7 +264,7 @@ void SerialPort::ConfigureTermios()
                 throw std::runtime_error(std::string() + "baudRate passed to " + __PRETTY_FUNCTION__ + " unrecognized.");
         }
     }
-    // This does no different than STANDARD atm, but let's keep
+
     // them separate for now....
     else if (mBaudRateType == BaudRateType::CUSTOM)
     {
@@ -395,6 +395,34 @@ void SerialPort::Close() {
     }
 
     mState = State::CLOSED;
+}
+
+speed_t SerialPort::GetBaudRate()
+{
+    // Get baud rate
+    termios2 tty = GetTermios2();
+    return tty.c_ispeed;
+}
+
+
+// TODO:
+// Calculate the NumDataBits properly
+tcflag_t SerialPort::GetNumDataBits()
+{
+    termios2 tty = GetTermios2();
+    return tty.c_cflag & CSIZE;
+}
+
+tcflag_t SerialPort::GetParity()
+{
+    termios2 tty = GetTermios2();
+    return tty.c_cflag & PARENB;
+}
+
+tcflag_t SerialPort::GetNumStopBits()
+{
+    termios2 tty = GetTermios2();
+    return tty.c_cflag & CSTOPB;
 }
 
 } // namespace LinuxSerial

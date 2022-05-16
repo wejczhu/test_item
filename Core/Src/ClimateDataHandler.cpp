@@ -7,7 +7,7 @@ ClimateDataHandler::ClimateDataHandler(CoreController* controller)
     mController = controller;
 }
 
-void ClimateDataHandler::ParseData(std::vector<std::string> data)
+void ClimateDataHandler::ParseData(std::vector<std::string> data, std::string originalData)
 {
     // Check if data is valid
     if (data.front() != "BG" || data.back() != "ED")
@@ -16,44 +16,49 @@ void ClimateDataHandler::ParseData(std::vector<std::string> data)
         return;
     }
 
-    mClimateDataHead.mDataVersionNumber = data[VERSION_NUMBER];
-    mClimateDataHead.mDataZoneNumber = data[ZONE_NUMBER];
-    mClimateDataHead.mDataLongitude = data[LONGITUDE];
-    mClimateDataHead.mDataLatitude = data[LATITUDE];
-    mClimateDataHead.mDataHeight = data[HEIGHT];
-    mClimateDataHead.mDataServiceType = data[SERVICE_TYPE];
-    mClimateDataHead.mDataEquipmentSymbol = data[EQUIPMENT_SYMBOL];
-    mClimateDataHead.mDataEquipmentId = data[EQUIPMENT_ID];
-    mClimateDataHead.mDataMeasureTime = data[MEASURE_TIME];
-    mClimateDataHead.mDataFrameSymbol = data[FRAME_SYMBOL];
-    mClimateDataHead.mDataMeasureElementNumber = data[MEASURE_ELEMENT_NUMBER];
-    mClimateDataHead.mDataEquipmentElementNumber = data[EQUIPMENT_ELEMENT_NUMBER];
-    //mClimateDataHead. = data[MAIN_DATA_START];
+    std::string time = data[5];
+    std::string filter = data[6];
 
-    // Handle main data
-    std::vector<std::string> main_data;
-    int flag = 0;
-    main_data.assign(data.begin() + MAIN_DATA_START, data.end() - 2);
-    for(int i = 0; i < atoi(data[MEASURE_ELEMENT_NUMBER].c_str()) * 2; i += 2)
-    {
-        mClimateDataMain.mMeasureElement.insert(pair<string, string>(main_data[i], main_data[i + 1]));
-        flag += 2;
-    }
+    StoreData(time, originalData, filter);
 
-    mClimateDataMain.mQualityControl = main_data[flag];
-    flag++;
+    // mClimateDataHead.mDataVersionNumber = data[VERSION_NUMBER];
+    // mClimateDataHead.mDataZoneNumber = data[ZONE_NUMBER];
+    // mClimateDataHead.mDataLongitude = data[LONGITUDE];
+    // mClimateDataHead.mDataLatitude = data[LATITUDE];
+    // mClimateDataHead.mDataHeight = data[HEIGHT];
+    // mClimateDataHead.mDataServiceType = data[SERVICE_TYPE];
+    // mClimateDataHead.mDataEquipmentSymbol = data[EQUIPMENT_SYMBOL];
+    // mClimateDataHead.mDataEquipmentId = data[EQUIPMENT_ID];
+    // mClimateDataHead.mDataMeasureTime = data[MEASURE_TIME];
+    // mClimateDataHead.mDataFrameSymbol = data[FRAME_SYMBOL];
+    // mClimateDataHead.mDataMeasureElementNumber = data[MEASURE_ELEMENT_NUMBER];
+    // mClimateDataHead.mDataEquipmentElementNumber = data[EQUIPMENT_ELEMENT_NUMBER];
+    // //mClimateDataHead. = data[MAIN_DATA_START];
 
-    for(int i = flag; i < atoi(data[EQUIPMENT_ELEMENT_NUMBER].c_str()); i += 2)
-    {
-        mClimateDataMain.mMeasureElement.insert(pair<string, string>(main_data[i], main_data[i + 1]));
-        flag += 2;
-    }
+    // // Handle main data
+    // std::vector<std::string> main_data;
+    // int flag = 0;
+    // main_data.assign(data.begin() + MAIN_DATA_START, data.end() - 2);
+    // for(int i = 0; i < atoi(data[MEASURE_ELEMENT_NUMBER].c_str()) * 2; i += 2)
+    // {
+    //     mClimateDataMain.mMeasureElement.insert(pair<string, string>(main_data[i], main_data[i + 1]));
+    //     flag += 2;
+    // }
 
-    mCheckNum = main_data[flag];
+    // mClimateDataMain.mQualityControl = main_data[flag];
+    // flag++;
 
-    PrintDataHead();
-    PrintDataMain();
-    std::cout << "-------------------------------------" << std::endl;
+    // for(int i = flag; i < atoi(data[EQUIPMENT_ELEMENT_NUMBER].c_str()); i += 2)
+    // {
+    //     mClimateDataMain.mMeasureElement.insert(pair<string, string>(main_data[i], main_data[i + 1]));
+    //     flag += 2;
+    // }
+
+    // mCheckNum = main_data[flag];
+
+    // PrintDataHead();
+    // PrintDataMain();
+    // std::cout << "-------------------------------------" << std::endl;
 }
 
 void ClimateDataHandler::PrintDataHead()
@@ -80,4 +85,9 @@ void ClimateDataHandler::PrintDataMain()
         std::cout << it->first << ": " << it->second << std::endl;
     }
     std::cout << "Quality Control: " << mClimateDataMain.mQualityControl << std::endl;
+}
+
+void ClimateDataHandler::StoreData(std::string time, std::string data, std::string filter)
+{
+    mController->GetDataStorageUnit()->InsertClimateData(time, data, filter);
 }

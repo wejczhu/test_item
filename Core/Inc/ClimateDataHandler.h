@@ -17,10 +17,12 @@ class ClimateDataHandler: public DataHandler
 public:
     ClimateDataHandler(CoreController* controller);
     ~ClimateDataHandler() = default;
-    void ParseData(vector<std::string> data) override;
+    void ParseData(vector<std::string> data, std::string originalData) override;
     
     void PrintDataHead();
     void PrintDataMain();
+
+    void StoreData(std::string time, std::string data, std::string filter);
 
 private:
     ClimateDataHead mClimateDataHead;

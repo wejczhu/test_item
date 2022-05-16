@@ -29,24 +29,24 @@ void UartUser::Initialize()
     // CreateDirectory(SD_CARD_DEVICE + DATA_DIR_5_MINUTE);
     // CreateDirectory(SD_CARD_DEVICE + DATA_DIR_HOUR);
 
-    mFd.mStoreFd_1_min = open((SD_CARD_DEVICE + DATA_FILE_MINUTE).c_str(), O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
-    mFd.mStoreFd_5_min = open((SD_CARD_DEVICE + DATA_FILE_5_MINUTE).c_str(), O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
-    mFd.mStoreFd_1_hour = open((SD_CARD_DEVICE + DATA_FILE_HOUR).c_str(), O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
+    // mFd.mStoreFd_1_min = open((SD_CARD_DEVICE + DATA_FILE_MINUTE).c_str(), O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
+    // mFd.mStoreFd_5_min = open((SD_CARD_DEVICE + DATA_FILE_5_MINUTE).c_str(), O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
+    // mFd.mStoreFd_1_hour = open((SD_CARD_DEVICE + DATA_FILE_HOUR).c_str(), O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
 
-    if (mFd.mStoreFd_1_min == -1)
-    {
-        perror("Open SD-Card file 1_min");
-    }
+    // if (mFd.mStoreFd_1_min == -1)
+    // {
+    //     perror("Open SD-Card file 1_min");
+    // }
 
-    if (mFd.mStoreFd_5_min == -1)
-    {
-        perror("Open SD-Card file 5_min");
-    }
+    // if (mFd.mStoreFd_5_min == -1)
+    // {
+    //     perror("Open SD-Card file 5_min");
+    // }
 
-    if (mFd.mStoreFd_1_hour == -1)
-    {
-        perror("Open SD-Card file 1_hour");
-    }
+    // if (mFd.mStoreFd_1_hour == -1)
+    // {
+    //     perror("Open SD-Card file 1_hour");
+    // }
 }
 
 UartUser::UartUser(DataHandler* dataHandler)
@@ -79,7 +79,7 @@ void UartUser::Run()
         mSerialPort->Read(readBuffer);
         //std::cout << readBuffer << std::endl;
         vector<string> data = mDataHandler->SplitDataFrame(readBuffer);
-        mDataHandler->ParseData(data);
+        mDataHandler->ParseData(data, readBuffer);
 
         StoreData(readBuffer);
     }
@@ -98,13 +98,13 @@ void UartUser::Terminate()
 
 void UartUser::StoreData(std::string &data)
 {
-    int ret = write(mFd.mStoreFd_1_min, data.data(), data.length());
-    ret = write(mFd.mStoreFd_5_min, data.data(), data.length());
-    ret = write(mFd.mStoreFd_1_hour, data.data(), data.length());
-    if (ret < 0)
-    {
-        perror("Write data");
-    }
+    // int ret = write(mFd.mStoreFd_1_min, data.data(), data.length());
+    // ret = write(mFd.mStoreFd_5_min, data.data(), data.length());
+    // ret = write(mFd.mStoreFd_1_hour, data.data(), data.length());
+    // if (ret < 0)
+    // {
+    //     perror("Write data");
+    // }
 }
 
 void UartUser::SendData(std::string data)
@@ -132,4 +132,9 @@ void UartUser::CreateDirectory(std::string path)
     //         //throw std::runtime_error( strerror(errno) );
     //     }
     // }
+}
+
+SerialPort* UartUser::GetSerialPort()
+{
+    return mSerialPort;
 }

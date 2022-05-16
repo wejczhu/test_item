@@ -13,7 +13,7 @@ class CommandDataHandler: public DataHandler
 public:
     CommandDataHandler(CoreController* controller);
     ~CommandDataHandler() = default;
-    void ParseData(vector<std::string> data) override;
+    void ParseData(vector<std::string> data, std::string originalData) override;
     
     //void PrintDataHead();
     //void PrintDataMain();

@@ -112,6 +112,18 @@ public:
     // Set if Echo or not
     bool SetEcho(bool isEcho);
 
+    // Get BaudRate
+    speed_t GetBaudRate();
+
+    // Get the number of data bits
+    tcflag_t GetNumDataBits();
+
+    // Get the parity
+    tcflag_t GetParity();
+
+    // Get the number of stop bits
+    tcflag_t GetNumStopBits();
+
 private:
     void ConfigureTermios();
 

@@ -43,6 +43,8 @@ public:
     void CreateDirectory(std::string path);
 
     void SendData(std::string data);
+
+    SerialPort* GetSerialPort();
 private:
     SerialPort* mSerialPort;
     std::thread* mThread;

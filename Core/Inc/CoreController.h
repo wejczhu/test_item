@@ -7,6 +7,7 @@
 #include "CommandDataHandler.h"
 #include "ClimateDataHandler.h"
 #include "UartUser.h"
+#include "DataStorageUnit.h"
 #include <time.h>
 
 #include <iostream>
@@ -19,7 +20,7 @@
 #define COMMAND_HELP "HELP"
 #define COMMAND_EQUIPMENT_ZONE_NUMBER "QZ"
 #define COMMAND_SERVICE_TYPE "ST"
-#define COMMAND_EQUIPMENT_I "DI"
+#define COMMAND_EQUIPMENT_BIT "DI"
 #define COMMAND_EQUIPMENT_ID "ID"
 #define COMMAND_LATITUDE "LAT"
 #define COMMAND_LONGITUDE "LONG"
@@ -92,6 +93,30 @@ public:
     std::string GetSystemTime();
     std::string GetSystemDateAndTime();
 
+    void HandleSetCom(std::vector<std::string> command);
+
+    void ShowHelp();
+
+    void HandleEquipmentZoneNumber(std::vector<std::string> command);
+    void HandleServiceType(std::vector<std::string> command);
+    void HandleEquipmentBit(std::vector<std::string> command);
+    void HandleEquipmentId(std::vector<std::string> command);
+    
+
+
+    void HandleLatitude(std::vector<std::string> command);
+    void HandleLongitude(std::vector<std::string> command);
+
+
+    void HandleHistoryDownload(std::vector<std::string> command);
+
+    // void HandleEquipmentId(std::vector<std::string> command);
+    // std::string GetEquipmentId();
+    // void SetEquipmentId(std::string equipmentId);
+
+    DataStorageUnit* GetDataStorageUnit();
+
+    std::string RemoveNonNumeric(std::string str);
 
 private:
     static CoreController *mInstance;
@@ -105,6 +130,8 @@ private:
 
     ClimateDataHandler* mClimateDataHandler;
     CommandDataHandler* mCommandDataHandler;
+
+    DataStorageUnit* mStorageUnit;
 
     // Four uart for GPS, GPRS, Sensor and Command
     UartUser* mUartUserSensor;

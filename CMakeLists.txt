@@ -10,6 +10,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # add the Hardware library
 add_subdirectory(Hardware)
 add_subdirectory(Core)
+add_subdirectory(Storage)
+add_subdirectory(StandardLib/jsoncpp/src/lib_json)
 
 # add the executable
 add_executable(test_item main.cpp)
@@ -18,13 +20,18 @@ add_executable(test_item main.cpp)
 target_link_libraries(test_item PUBLIC
                       Hardware
                       Core
+                      Storage
+                      jsoncpp
                       pthread
+                      sqlite3
                       )
 
 target_include_directories(test_item PUBLIC
                           "${PROJECT_BINARY_DIR}"
                           "${PROJECT_SOURCE_DIR}/Hardware"
                           "${PROJECT_SOURCE_DIR}/Core"
+                          "${PROJECT_SOURCE_DIR}/Storage"
+                          "${PROJECT_SOURCE_DIR}/StandardLib/jsoncpp/src/lib_json"
                           )
 
 

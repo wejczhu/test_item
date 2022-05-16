@@ -17,6 +17,7 @@ add_library(Core "${SOURCE}")
 
 target_link_libraries(Core PUBLIC
                       Hardware
+                      Storage
 )
 
 # add the binary tree to the search path for include files
@@ -24,5 +25,6 @@ target_link_libraries(Core PUBLIC
 target_include_directories(Core PUBLIC
                           "./Inc"
                           "${PROJECT_SOURCE_DIR}/Hardware/Inc"
+                          "${PROJECT_SOURCE_DIR}/Storage/Inc"
                           )
 

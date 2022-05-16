@@ -1,15 +1,17 @@
 #include "CoreController.h"
-
 #include <sstream>
 
 CoreController::CoreController()
 : mClimateDataHandler(nullptr)
 , mCommandDataHandler(nullptr)
+, mStorageUnit(nullptr)
 , mUartUserSensor(nullptr)
 , mUartUserCommand(nullptr)
 , mUartUserGps(nullptr)
 , mUartUserGprs(nullptr)
 {
+    mStorageUnit = new DataStorageUnit();
+
     //mClimateDataHandler = new ClimateDataHandler(this);
     mCommandDataHandler = new CommandDataHandler(this);
 
@@ -19,11 +21,13 @@ CoreController::CoreController()
 
 CoreController::~CoreController()
 {
+    delete mStorageUnit;
     //delete mUartUserSensor;
     delete mUartUserCommand;
-    //delete mClimateDataHandler;
-    delete mCommandDataHandler;
+    delete mClimateDataHandler;
+    //delete mCommandDataHandler;
 
+    mStorageUnit = nullptr;
     mUartUserSensor = nullptr;
     mUartUserCommand = nullptr;
     mClimateDataHandler = nullptr;
@@ -92,7 +96,7 @@ void CoreController::HandleSystemDateAndTime(std::vector<std::string> command)
             mUartUserCommand->SendData(SET_FAILURE);
         }
     }
-} 
+}
 
 std::string CoreController::GetSystemTime()
 {
@@ -192,3 +196,204 @@ bool CoreController::SetSystemDate(std::string date)
 
     return false;
 }
+
+void CoreController::HandleSetCom(std::vector<std::string> command)
+{
+    if(command.size() == 1)
+    {
+        std::string baudRate = std::to_string(mUartUserCommand->GetSerialPort()->GetBaudRate());
+        std::string numBit = std::to_string(mUartUserCommand->GetSerialPort()->GetNumDataBits());
+        std::string parity = std::to_string(mUartUserCommand->GetSerialPort()->GetParity());
+        std::string stopBit = std::to_string(mUartUserCommand->GetSerialPort()->GetNumStopBits());
+
+        std::string totalInfo = baudRate + ", " + numBit + ", " + parity + ", " + stopBit;
+        mUartUserCommand->SendData(totalInfo);
+    }
+}
+
+void CoreController::ShowHelp()
+{
+    std::string helpInfo = "This function is work in progress";
+    mUartUserCommand->SendData(helpInfo);
+}
+
+void CoreController::HandleEquipmentZoneNumber(std::vector<std::string> command)
+{
+    if(command.size() == 1)
+    {
+        std::string zoneNumber = mStorageUnit->ReadJsonFile("equipment_zone_number");
+        mUartUserCommand->SendData(zoneNumber);
+    }
+    else
+    {
+        bool ret = mStorageUnit->WriteJsonFile("equipment_zone_number", command[1]);
+        if(ret)
+        {
+            mUartUserCommand->SendData(SET_SUCCESS);
+        }
+        else
+        {
+            mUartUserCommand->SendData(SET_FAILURE);
+        }
+    }
+}
+
+void CoreController::HandleServiceType(std::vector<std::string> command)
+{
+    if(command.size() == 1)
+    {
+        std::string serviceType = mStorageUnit->ReadJsonFile("service_type");
+        mUartUserCommand->SendData(serviceType);
+    }
+    else
+    {
+        bool ret = mStorageUnit->WriteJsonFile("service_type", command[1]);
+        if(ret)
+        {
+            mUartUserCommand->SendData(SET_SUCCESS);
+        }
+        else
+        {
+            mUartUserCommand->SendData(SET_FAILURE);
+        }
+    }
+}
+
+void CoreController::HandleEquipmentBit(std::vector<std::string> command)
+{
+    if(command.size() == 1)
+    {
+        std::string bitrate = mStorageUnit->ReadJsonFile("equipment_bit");
+        mUartUserCommand->SendData(bitrate);
+    }
+    else
+    {
+        bool ret = mStorageUnit->WriteJsonFile("equipment_bit", command[1]);
+        if(ret)
+        {
+            mUartUserCommand->SendData(SET_SUCCESS);
+        }
+        else
+        {
+            mUartUserCommand->SendData(SET_FAILURE);
+        }
+    }
+}
+
+void CoreController::HandleEquipmentId(std::vector<std::string> command)
+{
+    if(command.size() == 1)
+    {
+        std::string equipmentId = mStorageUnit->ReadJsonFile("equipment_id");
+        mUartUserCommand->SendData(equipmentId);
+    }
+    else
+    {
+        bool ret = mStorageUnit->WriteJsonFile("equipment_id", command[1]);
+        if(ret)
+        {
+            mUartUserCommand->SendData(SET_SUCCESS);
+        }
+        else
+        {
+            mUartUserCommand->SendData(SET_FAILURE);
+        }
+    }
+}
+
+void CoreController::HandleLatitude(std::vector<std::string> command)
+{
+    if(command.size() == 1)
+    {
+        std::string latitude = mStorageUnit->ReadJsonFile("latitude");
+        mUartUserCommand->SendData(latitude);
+    }
+    else
+    {
+        bool ret = mStorageUnit->WriteJsonFile("latitude", command[1]);
+        if(ret)
+        {
+            mUartUserCommand->SendData(SET_SUCCESS);
+        }
+        else
+        {
+            mUartUserCommand->SendData(SET_FAILURE);
+        }
+    }
+}
+
+void CoreController::HandleLongitude(std::vector<std::string> command)
+{
+    if(command.size() == 1)
+    {
+        std::string longitude = mStorageUnit->ReadJsonFile("longitude");
+        mUartUserCommand->SendData(longitude);
+    }
+    else
+    {
+        bool ret = mStorageUnit->WriteJsonFile("longitude", command[1]);
+        if(ret)
+        {
+            mUartUserCommand->SendData(SET_SUCCESS);
+        }
+        else
+        {
+            mUartUserCommand->SendData(SET_FAILURE);
+        }
+    }
+}
+
+void CoreController::HandleHistoryDownload(std::vector<std::string> command)
+{
+    std::vector<std::string> history;
+    if(command.size() == 5)
+    {
+        std::string startDate = command[1];
+        std::string startTime = command[2];
+        std::string start = RemoveNonNumeric(startDate + startTime);
+        std::string endDate = command[3];
+        std::string endTime = command[4];
+        std::string end = RemoveNonNumeric(endDate + endTime);
+        history = mStorageUnit->GetClimateDataBetweenTime(start, end);
+    }
+    else if(command.size() == 6)
+    {
+        std::string startDate = command[1];
+        std::string startTime = command[2];
+        std::string start = RemoveNonNumeric(startDate + startTime);
+        std::string endDate = command[3];
+        std::string endTime = command[4];
+        std::string end = RemoveNonNumeric(endDate + endTime);
+        std::string zoneNumber = command[5];
+        history = mStorageUnit->GetClimateDataBetweenTime(start, end, zoneNumber);
+    }
+    else
+    {
+        mUartUserCommand->SendData(COMMAND_BADCOMMAND);
+        return;
+    }
+
+    for(auto data : history)
+    {
+        mUartUserCommand->SendData(data);
+    }
+}
+
+std::string CoreController::RemoveNonNumeric(std::string str)
+{
+    std::string result = "";
+    for(int i = 0; i < str.length(); i++)
+    {
+        if(isdigit(str[i]))
+        {
+            result += str[i];
+        }
+    }
+    return result;
+}
+
+DataStorageUnit* CoreController::GetDataStorageUnit()
+{
+    return mStorageUnit;
+}
+

@@ -8,18 +8,14 @@ CommandDataHandler::CommandDataHandler(CoreController* controller)
     mController = controller;
 }
 
-void CommandDataHandler::ParseData(std::vector<std::string> data)
+void CommandDataHandler::ParseData(std::vector<std::string> data, std::string originalData)
 {
     string command = data[0];
 
     // compare command with command
     if(command.compare(std::string(COMMAND_SET_COM_PARAMETER)) == 0)
     {
-        if(data.size() == 1)
-        {
-            
-        }
-        std::cout << "COMMAND_SET_COM_PARAMETER" << std::endl;
+        mController->HandleSetCom(data);
     }
     else if(command.compare(std::string(COMMAND_AUTO_CHECK)) == 0)
     {
@@ -27,31 +23,31 @@ void CommandDataHandler::ParseData(std::vector<std::string> data)
     }
     else if(command.compare(std::string(COMMAND_HELP)) == 0)
     {
-        std::cout << "COMMAND_HELP" << std::endl;
+        mController->ShowHelp();
     }
     else if(command.compare(std::string(COMMAND_EQUIPMENT_ZONE_NUMBER)) == 0)
     {
-        std::cout << "COMMAND_EQUIPMENT_ZONE_NUMBER" << std::endl;
+        mController->HandleEquipmentZoneNumber(data);
     }
     else if(command.compare(std::string(COMMAND_SERVICE_TYPE)) == 0)
     {
-        std::cout << "COMMAND_SERVICE_TYPE" << std::endl;
+        mController->HandleServiceType(data);
     }
     else if(command.compare(std::string(COMMAND_EQUIPMENT_BIT)) == 0)
     {
-        std::cout << "COMMAND_EQUIPMENT_BIT" << std::endl;
+        mController->HandleEquipmentBit(data);
     }
     else if(command.compare(std::string(COMMAND_EQUIPMENT_ID)) == 0)
     {
-        std::cout << "COMMAND_EQUIPMENT_ID" << std::endl;
+        mController->HandleEquipmentId(data);
     }
     else if(command.compare(std::string(COMMAND_LATITUDE)) == 0)
     {
-        std::cout << "COMMAND_LATITUDE" << std::endl;
+        mController->HandleLatitude(data);
     }
     else if(command.compare(std::string(COMMAND_LONGITUDE)) == 0)
     {
-        std::cout << "COMMAND_LONGITUDE" << std::endl;
+        mController->HandleLongitude(data);
     }
     else if(command.compare(std::string(COMMAND_DATE)) == 0)
     {
@@ -71,7 +67,7 @@ void CommandDataHandler::ParseData(std::vector<std::string> data)
     }
     else if(command.compare(std::string(COMMAND_DOWNLOAD_HISTORY)) == 0)
     {
-        std::cout << "COMMAND_DOWNLOAD_HISTORY" << std::endl;
+        mController->HandleHistoryDownload(data);
     }
     else if(command.compare(std::string(COMMAND_READ_DATA)) == 0)
     {
