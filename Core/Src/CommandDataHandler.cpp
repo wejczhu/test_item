@@ -63,7 +63,7 @@ void CommandDataHandler::ParseData(std::vector<std::string> data, std::string or
     }
     else if(command.compare(std::string(COMMAND_FACILITY_TIME_INTERVAL)) == 0)
     {
-        std::cout << "COMMAND_FACILITY_TIME_INTERVAL" << std::endl;
+        mController->HandleFacilityTimeInterval(data);
     }
     else if(command.compare(std::string(COMMAND_DOWNLOAD_HISTORY)) == 0)
     {
@@ -71,7 +71,7 @@ void CommandDataHandler::ParseData(std::vector<std::string> data, std::string or
     }
     else if(command.compare(std::string(COMMAND_READ_DATA)) == 0)
     {
-        std::cout << "COMMAND_READ_DATA" << std::endl;
+        mController->HandleLastestData(data);
     }
     else if(command.compare(std::string(COMMAND_SET_COM_WAY)) == 0)
     {

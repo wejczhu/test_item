@@ -95,10 +95,29 @@ std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string 
     }
 
     return data;
-
 }
 
+std::vector<std::string> DataStorageUnit::GetLatestClimateDataByFilter(std::string filter)
+{
+    std::string sql = "SELECT * FROM climate_data WHERE FILTER = " + filter + " ORDER BY TIME DESC LIMIT 1";
+    sqlite3_stmt* t_statement;
+    int rc = sqlite3_prepare_v2(mDatabase, sql.c_str(), -1, &t_statement, NULL);
+    if (rc != SQLITE_OK)
+    {
+        std::cout << "SQL error: " << sqlite3_errmsg(mDatabase) << std::endl;
+        sqlite3_close(mDatabase);
+    }
 
+    // iterate over the columns to get the data
+    std::vector<std::string> data;
+    while (sqlite3_step(t_statement) == SQLITE_ROW)
+    {
+        auto temp = sqlite3_column_text(t_statement, 1);
+        data.push_back(std::string(reinterpret_cast<const char*>(temp)));
+    }
+
+    return data;
+}
 
 std::string DataStorageUnit::ReadJsonFile(const std::string& tag)
 {

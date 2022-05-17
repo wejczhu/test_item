@@ -23,6 +23,8 @@ public:
     std::vector<std::string> GetClimateDataBetweenTime(std::string time1, std::string time2);
     std::vector<std::string> GetClimateDataBetweenTime(std::string time1, std::string time2, std::string filter);
 
+    std::vector<std::string> GetLatestClimateDataByFilter(std::string filter);
+
     std::string ReadJsonFile(const std::string& tag);
 
     bool WriteJsonFile(const std::string& tag, const std::string& info);

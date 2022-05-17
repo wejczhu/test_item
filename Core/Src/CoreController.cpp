@@ -1,5 +1,6 @@
 #include "CoreController.h"
 #include <sstream>
+#include <functional>
 
 CoreController::CoreController()
 : mClimateDataHandler(nullptr)
@@ -9,6 +10,8 @@ CoreController::CoreController()
 , mUartUserCommand(nullptr)
 , mUartUserGps(nullptr)
 , mUartUserGprs(nullptr)
+, mTimer1Minute(nullptr)
+, mTimer5Minute(nullptr)
 {
     mStorageUnit = new DataStorageUnit();
 
@@ -17,6 +20,8 @@ CoreController::CoreController()
 
     //mUartUserSensor = new UartUser(mClimateDataHandler);
     mUartUserCommand = new UartUser(mCommandDataHandler);
+
+    mTimer1Minute = new Timer(1, std::bind(&CoreController::TimeEventHandler, this));
 }
 
 CoreController::~CoreController()
@@ -379,6 +384,74 @@ void CoreController::HandleHistoryDownload(std::vector<std::string> command)
     }
 }
 
+void CoreController::HandleLastestData(std::vector<std::string> command)
+{
+    std::vector<std::string> history;
+    if(command.size() == 1)
+    {
+        history = mStorageUnit->GetLatestClimateDataByFilter("001");
+    }
+    else if(command.size() == 2)
+    {
+        history = mStorageUnit->GetLatestClimateDataByFilter(command[1]);
+    }
+    else
+    {
+        mUartUserCommand->SendData(COMMAND_BADCOMMAND);
+        return;
+    }
+
+    for(auto data : history)
+    {
+        mUartUserCommand->SendData(data);
+    }
+}
+
+void CoreController::HandleFacilityTimeInterval(std::vector<std::string> command)
+{
+    if(command.size() == 1)
+    {
+    }
+    else
+    {
+        int timeInterval = std::stoi(command[2]);
+        if(command[1] == "001")
+        {
+            mTimer1Minute->SetTimerInterval(timeInterval);
+        }
+        else if(command[1] == "005")
+        {
+            mTimer5Minute->SetTimerInterval(timeInterval);
+        }
+    }
+}
+
+void CoreController::TimeEventHandler(void)
+{
+    std::cout << "TimeEventHandler is called!" << std::endl;
+    mUartUserCommand->SendData("This is a test message!");
+}
+
+void CoreController::HandleSetComWay(std::vector<std::string> command)
+{
+    if(command.size() == 2)
+    {
+        bool ret = mStorageUnit->WriteJsonFile("com_way", command[1]);
+        if(ret)
+        {
+            mUartUserCommand->SendData(SET_SUCCESS);
+        }
+        else
+        {
+            mUartUserCommand->SendData(SET_FAILURE);
+        }
+    }
+    else
+    {
+        mUartUserCommand->SendData(COMMAND_BADCOMMAND);
+    }
+}
+
 std::string CoreController::RemoveNonNumeric(std::string str)
 {
     std::string result = "";
@@ -392,8 +465,9 @@ std::string CoreController::RemoveNonNumeric(std::string str)
     return result;
 }
 
+
+
 DataStorageUnit* CoreController::GetDataStorageUnit()
 {
     return mStorageUnit;
 }
-

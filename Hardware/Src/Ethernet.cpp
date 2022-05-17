@@ -162,8 +162,7 @@ void Ethernet::Terminate()
     {
         return;
     }
-    std::cout << "terminate thread " << std::endl;
+
     mIsRunning = false;
     mThread->join();
-    std::cout << "thread is finished !!!!!!" << std::endl;
 }

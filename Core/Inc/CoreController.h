@@ -8,6 +8,7 @@
 #include "ClimateDataHandler.h"
 #include "UartUser.h"
 #include "DataStorageUnit.h"
+#include "Timer.h"
 #include <time.h>
 
 #include <iostream>
@@ -110,6 +111,12 @@ public:
 
     void HandleHistoryDownload(std::vector<std::string> command);
 
+    void HandleLastestData(std::vector<std::string> command);
+
+    void HandleSetComWay(std::vector<std::string> command);
+
+    void HandleFacilityTimeInterval(std::vector<std::string> command);
+
     // void HandleEquipmentId(std::vector<std::string> command);
     // std::string GetEquipmentId();
     // void SetEquipmentId(std::string equipmentId);
@@ -118,8 +125,13 @@ public:
 
     std::string RemoveNonNumeric(std::string str);
 
+    void TimeEventHandler(void);
+
 private:
     static CoreController *mInstance;
+
+    Timer* mTimer1Minute;
+    Timer* mTimer5Minute;
 
     // Command parameter
     std::string mEquipmentZoneNumber;
@@ -132,6 +144,10 @@ private:
     CommandDataHandler* mCommandDataHandler;
 
     DataStorageUnit* mStorageUnit;
+
+    std::string m1MinTimeInterval;
+    std::string m5MinTimeInterval;
+    std::string m1HourTimeInterval;
 
     // Four uart for GPS, GPRS, Sensor and Command
     UartUser* mUartUserSensor;
