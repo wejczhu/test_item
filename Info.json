@@ -1,0 +1,179 @@
+{
+    "controller_config":
+    {
+        "equipment_zone_number": "00000",
+        "service_type": "00",
+        "equipment_bit": "YAWS",
+        "equipment_id": "000",
+        "latitude": "0.0",
+        "longitude": "0.0"
+    },
+
+    "sensors":{
+        "001":
+        {
+            "name" : "sensor_air_pressure",
+            "id" : "001",
+            "serial_number" : "0111130405060708",
+            "label" : "YTPS",
+            "measure_element":
+            [
+                "AGA",
+                "AGAa",
+                "AGAb",
+                "AGAc",
+                "AGAd"
+            ]
+        },
+        "002":
+        {
+            "name": "sensor_temperature",
+            "id" : "002",
+            "serial_number" : "0111130405060708",
+            "label" : "YTMP",
+            "measure_element":
+            [
+                "AGA",
+                "AGAa",
+                "AGAb",
+                "AGAc",
+                "AGAd"
+            ]
+        },
+        "003":
+        {
+            "name" : "sensor_humidity",
+            "id" : "003",
+            "serial_number" : "0111130405060708",
+            "label" : "YHMS",
+            "measure_element":
+            [
+                "AGA",
+                "AGAa",
+                "AGAb",
+                "AGAc",
+                "AGAd"
+            ]
+        },
+        "004":
+        {
+            "name" : "sensor_weigh_rain",
+            "id" : "004",
+            "serial_number" : "0111130405060708",
+            "label" : "YWYG",
+            "measure_element":
+            [
+                "AGA",
+                "AGAa",
+                "AGAb",
+                "AGAc",
+                "AGAd"
+            ]
+        },
+        "005":
+        {
+            "name" : "sensor_skip_bucket_rain",
+            "id" : "005",
+            "serial_number" : "0111130405060708",
+            "label" : "YTBR",
+            "measure_element":
+            [
+                "AGA",
+                "AGAa",
+                "AGAb",
+                "AGAc",
+                "AGAd"
+            ]
+        },
+        "006":
+        {
+            "name" : "5m_wind",
+            "id" : "006",
+            "serial_number" : "0111130405060708",
+            "label" : "YWPD",
+            "measure_element":
+            [
+                "AGA",
+                "AGAa",
+                "AGAb",
+                "AGAc",
+                "AGAd"
+            ]
+        },
+        "007":
+        {
+            "name" : "sensor_10m_wind",
+            "id" : "007",
+            "serial_number" : "0111130405060708",
+            "label" : "YWPD",
+            "measure_element":
+            [
+                "AGA",
+                "AGAa",
+                "AGAb",
+                "AGAc",
+                "AGAd"
+            ]
+        },
+        "008":
+        {
+            "name" : "sensor_infrared_land_temperature",
+            "id" : "008",
+            "serial_number" : "0111130405060708",
+            "label" : "YIST",
+            "measure_element":
+            [
+                "AGA",
+                "AGAa",
+                "AGAb",
+                "AGAc",
+                "AGAd"
+            ]
+        },
+        "009":
+        {
+            "name" : "sensor_soil_moisture",
+            "id" : "009",
+            "serial_number" : "0111130405060708",
+            "label" : "YSMS",
+            "measure_element":
+            [
+                "AGA",
+                "AGAa",
+                "AGAb",
+                "AGAc",
+                "AGAd"
+            ]
+        },
+        "010":
+        {
+            "name" : "sensor_soil_temperature",
+            "id" : "010",
+            "serial_number" : "0111130405060708",
+            "label" : "YSGT",
+            "measure_element":
+            [
+                "AGA",
+                "AGAa",
+                "AGAb",
+                "AGAc",
+                "AGAd"
+            ]
+        },
+        "011":
+        {
+            "name" : "sensor_total_radiation",
+            "id" : "011",
+            "serial_number" : "0111130405060708",
+            "label" : "YTRS",
+            "measure_element":
+            [
+                "AGA",
+                "AGAa",
+                "AGAb",
+                "AGAc",
+                "AGAd"
+            ]
+        }
+    }
+}

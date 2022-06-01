@@ -10,14 +10,22 @@ ClimateDataHandler::ClimateDataHandler(CoreController* controller)
 void ClimateDataHandler::ParseData(std::vector<std::string> data, std::string originalData)
 {
     // Check if data is valid
-    if (data.front() != "BG" || data.back() != "ED")
+    if (data.front() != "BG" || data.back() != "ED\r\n")
     {
-        std::cout << "Data is invalid, please double check" << std::endl;
+        if(data.front() == "!001CI" && (data.size() > 2))
+        {
+            mController->HandleSensorConnectionRequest(data);
+        }
+        else
+        {
+            std::cout << "Invalid data: " << originalData << std::endl;
+        }
+
         return;
     }
 
-    std::string time = data[5];
-    std::string filter = data[6];
+    std::string time = data[9];
+    std::string filter = data[10];
 
     StoreData(time, originalData, filter);
 
@@ -59,6 +67,39 @@ void ClimateDataHandler::ParseData(std::vector<std::string> data, std::string or
     // PrintDataHead();
     // PrintDataMain();
     // std::cout << "-------------------------------------" << std::endl;
+}
+
+void ParseSensorCommend(std::vector<std::string> data)
+{
+    // If data[0] last 2 char is "CI"
+    std::string command = data[0].substr(data[0].length() - 2, 2);
+
+    if(command == "CI")
+    {
+        // Check if sensor already exist
+        std::string sensorId = data[0].substr(1, 3);
+        if(!mController->IfSensorExist(sensorId))
+        {
+            std::string connectionTime = data[1];
+            std::string requestMD5 = data[3].substr(0, data[3].length() - 1);
+            mController->HandleSensorConnectionRequest(sensorId, connectionTime, requestMD5);
+        }
+
+        std::cout << "The sensor " << sensorId << " is already connected." << std::endl;
+    }
+    else if(command == "")
+    {
+
+    }
+    else if(command == "")
+    {
+
+    }
+    else
+    {
+        
+    }
+
 }
 
 void ClimateDataHandler::PrintDataHead()

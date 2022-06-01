@@ -24,29 +24,6 @@ void UartUser::Initialize()
     // Initialize thread
     mThread = new std::thread(&UartUser::Run, this);
     mIsRunning = true;
-
-    // CreateDirectory(SD_CARD_DEVICE + DATA_DIR_MINUTE);
-    // CreateDirectory(SD_CARD_DEVICE + DATA_DIR_5_MINUTE);
-    // CreateDirectory(SD_CARD_DEVICE + DATA_DIR_HOUR);
-
-    // mFd.mStoreFd_1_min = open((SD_CARD_DEVICE + DATA_FILE_MINUTE).c_str(), O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
-    // mFd.mStoreFd_5_min = open((SD_CARD_DEVICE + DATA_FILE_5_MINUTE).c_str(), O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
-    // mFd.mStoreFd_1_hour = open((SD_CARD_DEVICE + DATA_FILE_HOUR).c_str(), O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
-
-    // if (mFd.mStoreFd_1_min == -1)
-    // {
-    //     perror("Open SD-Card file 1_min");
-    // }
-
-    // if (mFd.mStoreFd_5_min == -1)
-    // {
-    //     perror("Open SD-Card file 5_min");
-    // }
-
-    // if (mFd.mStoreFd_1_hour == -1)
-    // {
-    //     perror("Open SD-Card file 1_hour");
-    // }
 }
 
 UartUser::UartUser(DataHandler* dataHandler)

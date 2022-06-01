@@ -11,7 +11,7 @@ public:
     Timer(int minutes, std::function<void()> callback);
     ~Timer();
 
-    void Terminite();
+    void Terminate();
     //void Start();
     //void Stop();
     //void Reset();
@@ -21,10 +21,16 @@ public:
     int GetTimeInterval();
     void SetTimerInterval(int timeInterval);
 
+    bool GetTimerStatus();
+
+    void StartTimer();
+    void StopTimer();
+
 private:
     int mTimeInterval;
+    bool mIsTimeout;
     std::thread* mThread;
-    // pointer to callback function
+    // Pointer to callback function
     std::function<void()> mCallback;
     bool mIsRunning;
 };

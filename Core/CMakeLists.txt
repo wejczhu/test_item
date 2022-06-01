@@ -9,6 +9,7 @@ ${CMAKE_SOURCE_DIR}/Core/Src/ClimateDataHandler.cpp
 ${CMAKE_SOURCE_DIR}/Core/Src/CommandDataHandler.cpp
 ${CMAKE_SOURCE_DIR}/Core/Src/CoreController.cpp
 ${CMAKE_SOURCE_DIR}/Core/Src/Timer.cpp
+${CMAKE_SOURCE_DIR}/Core/Src/Sensor.cpp
 )
 
 # Add the library

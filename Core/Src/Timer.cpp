@@ -7,11 +7,12 @@ Timer::Timer(int minutes, std::function<void()> callback)
 {
     mThread = new std::thread(&Timer::Run, this);
     mIsRunning = true;
+    mIsTimeout = false;
 }
 
 Timer::~Timer()
 {
-    Terminite();
+    Terminate();
     delete mThread;
     mThread = nullptr;
 }
@@ -21,12 +22,31 @@ void Timer::Run()
     while(mIsRunning)
     {
         std::this_thread::sleep_for(std::chrono::minutes(mTimeInterval));
-        std::cout << "Timer::Run()" << std::endl;
-        this->mCallback();
+        if(mIsRunning)
+        {
+            mIsTimeout = true;
+            mCallback();
+        }
+        mIsTimeout = false;
     }
 }
 
-void Timer::Terminite()
+void Timer::StopTimer()
+{
+    mIsRunning = false;
+}
+
+void Timer::StartTimer()
+{
+    mIsRunning = true;
+}
+
+bool Timer::GetTimerStatus()
+{
+    return mIsTimeout;
+}
+
+void Timer::Terminate()
 {
     if (!mIsRunning)
     {

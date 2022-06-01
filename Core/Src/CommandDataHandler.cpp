@@ -12,14 +12,17 @@ void CommandDataHandler::ParseData(std::vector<std::string> data, std::string or
 {
     string command = data[0];
 
+    //Get last 2 char of command
+    string last2char = command.substr(command.length() - 2, 2);
+
     // compare command with command
-    if(command.compare(std::string(COMMAND_SET_COM_PARAMETER)) == 0)
+    if(last2char.compare(std::string()) == 0)
     {
         mController->HandleSetCom(data);
     }
     else if(command.compare(std::string(COMMAND_AUTO_CHECK)) == 0)
     {
-        std::cout << "COMMAND_AUTO_CHECK" << std::endl;
+        //mController->
     }
     else if(command.compare(std::string(COMMAND_HELP)) == 0)
     {
@@ -75,7 +78,11 @@ void CommandDataHandler::ParseData(std::vector<std::string> data, std::string or
     }
     else if(command.compare(std::string(COMMAND_SET_COM_WAY)) == 0)
     {
-        std::cout << "COMMAND_SET_COM_WAY" << std::endl;
+        mController->HandleSetComWay(data);
+    }
+    else if(command.compare("") == 0)
+    {
+
     }
     else
     {

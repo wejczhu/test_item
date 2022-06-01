@@ -7,7 +7,6 @@
 
 using namespace std;
 
-
 #define COMMAND_BADCOMMAND  "Bad Command"
 #define COMMAND_READ_DATA  "READDATA"
 #define COMMAND_SET_COM_PARAMETER  "SETCOM"

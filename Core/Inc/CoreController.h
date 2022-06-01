@@ -9,6 +9,8 @@
 #include "UartUser.h"
 #include "DataStorageUnit.h"
 #include "Timer.h"
+#include "Sensor.h"
+
 #include <time.h>
 
 #include <iostream>
@@ -33,6 +35,36 @@
 
 #define SET_SUCCESS "T"
 #define SET_FAILURE "F"
+
+
+#define EQUIPMENT_AUTO_CHECK_STATUS "z"
+#define SENSOR_ATMOSPHERIC_PRESSURE_STATUS "y_AGA"
+#define SENSOR_AIR_TEMPERATURE_STATUS "y_AAA"
+#define SENSOR_RELATE_HUMIDITY_STATUS "y_ADA"
+#define SENSOR__RAIN_FORCE_STATUS "y_AHA"
+#define SENSOR_HEAVY_RAIN_FORCE_STATUS "y_AHC"
+#define SENSOR_1_POINT_5_WIND_STATUS "y_AWA150"
+#define SENSOR_10_WIND_STATUS "y_AWA"
+#define SENSOR_EARTH_SURFACE_TEMPERATURE_STATUS "y_ABB"
+#define SENSOR_LAND_MOISTURE_STATUS "y_ARA"
+#define SENSOR_LAND_TEMPERATURE_STATUS "y_AB"
+#define SENSOR_RADIATION_STATUS "y_AJA"
+#define BOARD_EXTERNAL_POWER_STATUS "xA"
+#define BOARD_VOLTAGE_STATUS "xB"
+#define BOARD_TEMPERATURE_STATUS "wA"
+#define GPS_CONNECTION_STATUS "tP"
+#define GPRS_WORK_STATUS "tQ"
+
+
+#define SENSOR_COMMAND_HEADER_GENERAL "#"
+#define SENSOR_COMMAND_HEADER_SPECIAL "$"
+#define SENSOR_COMMAND_HEADER_TRANSPARENT "&"
+#define SENSOR_COMMAND_CONNECTION_INFO "CI"
+#define SENSOR_COMMAND_READ_DATA "DM"
+#define SENSOR_COMMAND_DATE_AND_TIME "DT"
+
+#define SD_CARD_MOUNT_DIR "/run/media/mmcblk0p1"
+
 
 class UartUser;
 class ClimateDataHandler;
@@ -103,6 +135,11 @@ public:
     void HandleEquipmentBit(std::vector<std::string> command);
     void HandleEquipmentId(std::vector<std::string> command);
     
+    void OnTimeEvent_SensorData_1Min();
+    void OnTimeEvent_SensorData_1Hour();
+    void OnTimeEvent_StorageData();
+    void OnTimeEvent_Time_Calibration();
+
 
 
     void HandleLatitude(std::vector<std::string> command);
@@ -111,7 +148,7 @@ public:
 
     void HandleHistoryDownload(std::vector<std::string> command);
 
-    void HandleLastestData(std::vector<std::string> command);
+    void HandleLatestData(std::vector<std::string> command);
 
     void HandleSetComWay(std::vector<std::string> command);
 
@@ -127,11 +164,39 @@ public:
 
     void TimeEventHandler(void);
 
+    void CollectData_1_Min(void);
+    void CollectData_5_Min(void);
+    void CollectData_1_Hour(void);
+
+    void RegisterSensor(Sensor *sensor);
+    bool IsSensorValid(std::string registerInfo);
+
+    void HandleSensorConnectionRequest(std::string sensorId, std::string connectionTime, std::string requestMD5);
+    std::string CalculateMD5Sum(std::string originalData);
+
+    int ConvertToASCII(string letter);
+
+    void SendRegisterRequestToAllSensors();
+    bool IfSensorExist(std::string sensorId);
+
+    void CheckMissingData(std::string time);
+
 private:
     static CoreController *mInstance;
 
     Timer* mTimer1Minute;
     Timer* mTimer5Minute;
+    Timer* mTimer1Hour;
+    Timer* mTimerStorage;
+
+    bool mIsAutoSend;
+    bool m1MinuteFinish;
+    bool m5MinuteFinish;
+    bool m1HourFinish;
+    bool mStorageFinish;
+    bool mTimeCalibrationFinish;
+
+    bool mCheck1MinFinish;
 
     // Command parameter
     std::string mEquipmentZoneNumber;
@@ -154,6 +219,12 @@ private:
     UartUser* mUartUserCommand;
     UartUser* mUartUserGps;
     UartUser* mUartUserGprs;
+
+    std::vector<Sensor*> mSensors;
+
+    const static uint8_t DATA_SEND_START_TIME = 5;
+    const static uint8_t MAX_SENSOR_NUMBER = 10;
+    const static uint8_t TOTAL_TRANSMIT_TIME = 10;
 };
 
 #endif // _CORE_CONTROLLER_H_
