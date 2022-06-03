@@ -32,6 +32,8 @@ public:
 
     bool WriteJsonFile(const std::string& tag, const std::string& info);
 
+    sqlite3* GetDatabase();
+
 private:
     std::ifstream mJsonFile;
     Json::Value mJsonRoot;

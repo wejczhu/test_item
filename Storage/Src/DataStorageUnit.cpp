@@ -225,3 +225,8 @@ bool DataStorageUnit::WriteJsonFile(const std::string& tag, const std::string& i
     outputFileStream << json_str;
     //writer -> write(rootJsonValue, &outputFileStream);
 }
+
+sqlite3* DataStorageUnit::GetDatabase()
+{
+    return mDatabase;
+}

@@ -858,7 +858,21 @@ void CoreController::HandleSensorConnectionRequest(std::string sensorId, std::st
     if(requestMD5 == responseMD5)
     {
         // Register sensor
-        Sensor* sensor = new Sensor(sensorId);
+
+        Sensor* sensor = nullptr;
+        if(sensorId == "001")
+        {
+            sensor = new SensorAirPressure(sensorId, mStorageUnit);
+        }
+        else if(sensorId == "002")
+        {
+            sensor = new SensorTemperature(sensorId, mStorageUnit);
+        }
+        else 
+        {
+            std::cout << "This sensor is not supported" << std::endl;
+        }
+
         RegisterSensor(sensor);
         std::cout << "register sensor: " << sensorId << std::endl;
 
@@ -875,6 +889,40 @@ void CoreController::HandleSensorConnectionRequest(std::string sensorId, std::st
         // Send response to sensor
     }
 }
+
+void CoreController::CalculateHourClimateData(std::string startTime, std::string endTime)
+{
+    // Calculate hour climate data
+    for(auto sensor : mSensors)
+    {
+        std::string sensorId = sensor->GetEquipmentId();
+        auto hourData = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, sensorId, "001");
+        // Check if data is missing
+        for(auto data : hourData)
+        {
+            // Check if data is missing
+            
+        }
+    }
+}
+
+std::string CoreController::CalculateHourClimateData_Air_Pressure(std::string startTime, std::string endTime)
+{
+    // On hour air pressure
+    std::vector<std::string> climateData = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, "001");
+    std::map<std::string, std::string> pressureData;
+    for(auto data : climateData)
+    {
+        std::string pressure = 
+        pressureData[dataItem[0]] = dataItem[1];
+    }
+}
+
+void CoreController::GenerateClimateMessage(std::string measureData)
+{
+
+}
+
 
 // Check if sensor is valid
 bool CoreController::IsSensorValid(std::string registerInfo)

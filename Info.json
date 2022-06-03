@@ -9,6 +9,13 @@
         "longitude": "0.0"
     },
 
+    "core_controller":
+    {
+        "name": "core_controller",
+        "id": "000",
+        "label": "YAWS"
+    },
+
     "sensors":{
         "001":
         {
@@ -17,6 +24,14 @@
             "serial_number" : "0111130405060708",
             "label" : "YTPS",
             "measure_element":
+            [
+                "AGA",
+                "AGAa",
+                "AGAb",
+                "AGAc",
+                "AGAd"
+            ],
+            "output_element":
             [
                 "AGA",
                 "AGAa",
@@ -38,6 +53,16 @@
                 "AGAb",
                 "AGAc",
                 "AGAd"
+            ],
+            "output_element":
+            [
+                "AAA5i",
+                "AAA",
+                "AAAa",
+                "AAAb",
+                "AAAc",
+                "AAAd",
+                "AAAi"
             ]
         },
         "003":
@@ -48,11 +73,17 @@
             "label" : "YHMS",
             "measure_element":
             [
-                "AGA",
-                "AGAa",
-                "AGAb",
-                "AGAc",
-                "AGAd"
+                "ADA",
+                "ADAc",
+                "ADAd",
+                "ADAi"
+            ],
+            "output_element":
+            [
+                "ADA",
+                "ADAc",
+                "ADAd",
+                "ADAi"
             ]
         },
         "004":
@@ -68,6 +99,11 @@
                 "AGAb",
                 "AGAc",
                 "AGAd"
+            ],
+            "output_element":
+            [
+                "AHC5",
+                "AHD"
             ]
         },
         "005":
@@ -78,16 +114,21 @@
             "label" : "YTBR",
             "measure_element":
             [
-                "AGA",
+                "AHA5",
                 "AGAa",
                 "AGAb",
                 "AGAc",
                 "AGAd"
+            ],
+            "output_element":
+            [
+                "AHA5",
+                "AHB"
             ]
         },
         "006":
         {
-            "name" : "5m_wind",
+            "name" : "sensor_1.5m_wind",
             "id" : "006",
             "serial_number" : "0111130405060708",
             "label" : "YWPD",
@@ -98,6 +139,25 @@
                 "AGAb",
                 "AGAc",
                 "AGAd"
+            ],
+            "output_element":
+            [
+                "AFA150",
+                "AFA150e",
+                "AFA150f",
+                "AFB150i",
+                "AFB150",
+                "AFC150",
+                "AFD150",
+                "AFD150a",
+                "AFD150b",
+                "AEA150",
+                "AEB150",
+                "AEB150i",
+                "AEC150",
+                "AED150",
+                "AEE150b",
+                "AEG150a"
             ]
         },
         "007":
@@ -113,6 +173,25 @@
                 "AGAb",
                 "AGAc",
                 "AGAd"
+            ],
+            "output_element":
+            [
+                "AFA1",
+                "AFAe",
+                "AFAf",
+                "AFB",
+                "AFbBi",
+                "AFC",
+                "AFD",
+                "AFDa",
+                "AFDb",
+                "AEA",
+                "AEB",
+                "AEBi",
+                "AEC",
+                "AED",
+                "AEEb",
+                "AEGa"
             ]
         },
         "008":
@@ -128,6 +207,15 @@
                 "AGAb",
                 "AGAc",
                 "AGAd"
+            ],
+            "output_element":
+            [
+                "ABB",
+                "ABBa",
+                "ABBb",
+                "ABBc",
+                "ABBd",
+                "ABBi"
             ]
         },
         "009":
@@ -143,6 +231,19 @@
                 "AGAb",
                 "AGAc",
                 "AGAd"
+            ],
+            "output_element":
+            [
+                "ARA10",
+                "ARA20",
+                "ARA30",
+                "ARA40",
+                "ARA50",
+                "ARB10",
+                "ARB20",
+                "ARB30",
+                "ARB40",
+                "ARB50"
             ]
         },
         "010":
@@ -158,6 +259,39 @@
                 "AGAb",
                 "AGAc",
                 "AGAd"
+            ],
+            "output_element":
+            [
+                "AB10",
+                "AB10a",
+                "AB10b",
+                "AB10c",
+                "AB10d",
+                "AB10i",
+                "AB20",
+                "AB20a",
+                "AB20b",
+                "AB20c",
+                "AB20d",
+                "AB20i",
+                "AB30",
+                "AB30a",
+                "AB30b",
+                "AB30c",
+                "AB30d",
+                "AB30i",
+                "AB40",
+                "AB40a",
+                "AB40b",
+                "AB40c",
+                "AB40d",
+                "AB40i",
+                "AB50",
+                "AB50a",
+                "AB50b",
+                "AB50c",
+                "AB50d",
+                "AB50i"
             ]
         },
         "011":
@@ -173,6 +307,15 @@
                 "AGAb",
                 "AGAc",
                 "AGAd"
+            ],
+            "output_element":
+            [
+                "AJA",
+                "AJAe",
+                "AJAf",
+                "AJAi",
+                "AJAA",
+                "AJT"
             ]
         }
     }

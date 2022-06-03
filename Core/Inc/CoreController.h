@@ -10,6 +10,8 @@
 #include "DataStorageUnit.h"
 #include "Timer.h"
 #include "Sensor.h"
+#include "SensorAirPressure.h"
+#include "SensorTemperature.h"
 
 #include <time.h>
 
@@ -180,6 +182,12 @@ public:
     bool IfSensorExist(std::string sensorId);
 
     void CheckMissingData(std::string time);
+
+    void CalculateHourClimateData(std::string startTime, std::string endTime);
+    std::string CalculateHourClimateData_Air_Pressure(std::string startTime, std::string endTime);
+
+
+    void GenerateClimateMessage(std::string measureData);
 
 private:
     static CoreController *mInstance;
