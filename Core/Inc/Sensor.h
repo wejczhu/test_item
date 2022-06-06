@@ -26,7 +26,7 @@ public:
 
     DataStorageUnit* GetDataStorageUnit();
 
-    virtual std::string CalculateData(std::string startTime, std::string endTime) = 0;
+    virtual std::vector<std::string> CalculateData(std::string startTime, std::string endTime) = 0;
     virtual void StoreData(std::string data) = 0;
 
 private:

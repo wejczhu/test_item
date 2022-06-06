@@ -873,7 +873,7 @@ void CoreController::HandleSensorConnectionRequest(std::string sensorId, std::st
             std::cout << "This sensor is not supported" << std::endl;
         }
 
-        RegisterSensor(sensor);
+        RegisterSensor(sensorId, sensor);
         std::cout << "register sensor: " << sensorId << std::endl;
 
         // Send response to sensor
@@ -895,34 +895,64 @@ void CoreController::CalculateHourClimateData(std::string startTime, std::string
     // Calculate hour climate data
     for(auto sensor : mSensors)
     {
-        std::string sensorId = sensor->GetEquipmentId();
-        auto hourData = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, sensorId, "001");
-        // Check if data is missing
-        for(auto data : hourData)
-        {
-            // Check if data is missing
-            
-        }
+        
     }
 }
 
-std::string CoreController::CalculateHourClimateData_Air_Pressure(std::string startTime, std::string endTime)
+std::string CoreController::GenerateClimateMessage(std::string measureData)
 {
-    // On hour air pressure
-    std::vector<std::string> climateData = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, "001");
-    std::map<std::string, std::string> pressureData;
-    for(auto data : climateData)
+
+    std::vector<std::string> climateData;
+    std::string Begin = "BG";
+    climateData.push_back(Begin);
+    // Merge climateData and header
+    auto header = GenerateClimateMessageHeader();
+    climateData.insert(climateData.end(), header.begin(), header.end());
+
+    //
+
+}
+
+std::vector<std::string> CoreController::GenerateClimateMessageHeader()
+{
+    std::vector<std::string> header;
+    auto value = mStorageUnit->ReadJsonFile("controller_config");
+
+    std::string Header_Version_Number = value["version_number"].asString();
+    std::string Header_Zone_Number = value["equipment_zone_number"].asString();
+    std::string Header_Latitude = value["latitude"].asString();
+    std::string Header_Longitude = value["longitude"].asString();
+    std::string Header_Height = value["height"].asString();
+    std::string Header_Service_Type = value["service_type"].asString();
+    std::string Header_Equipment_Bit = value["equipment_bit"].asString();
+    std::string Header_Equipment_Id = value["equipment_id"].asString();
+    std::string Header_Time = RemoveNonNumeric(GetSystemDateAndTime());
+    std::string Header_Frame = "016";
+
+    header.push_back(Header_Version_Number);
+    header.push_back(Header_Zone_Number);
+    header.push_back(Header_Latitude);
+    header.push_back(Header_Longitude);
+    header.push_back(Header_Height);
+    header.push_back(Header_Service_Type);
+    header.push_back(Header_Equipment_Bit);
+    header.push_back(Header_Equipment_Id);
+    header.push_back(Header_Time);
+    header.push_back(Header_Frame);
+
+    return header;
+}
+
+std::vector<std::string> CoreController::GenerateClimateMessageMain(std::string startTime, std::string endTime)
+{
+    std::vector<std::string> mainData;
+    std::vector<std::string> tempData;
+    for(auto sensor : mSensors)
     {
-        std::string pressure = 
-        pressureData[dataItem[0]] = dataItem[1];
+        auto data = sensor.second->CalculateData(startTime, endTime);
+        tempData.insert(tempData.end(), data.begin(), data.end());
     }
 }
-
-void CoreController::GenerateClimateMessage(std::string measureData)
-{
-
-}
-
 
 // Check if sensor is valid
 bool CoreController::IsSensorValid(std::string registerInfo)
@@ -960,6 +990,10 @@ std::string CoreController::CalculateMD5Sum(std::string originalData)
 //     return time;
 // }
 
+void CoreController::RegisterSensor(std::string sensorId, Sensor* sensor)
+{
+    mSensors[sensorId] = sensor;
+}
 
 int CoreController::ConvertToASCII(string letter)
 {
@@ -1004,7 +1038,7 @@ bool CoreController::IfSensorExist(std::string sensorId)
 {
     for(auto sensor : mSensors)
     {
-        if(sensor->GetEquipmentId() == sensorId)
+        if(sensor.second->GetEquipmentId() == sensorId)
         {
             return true;
         }

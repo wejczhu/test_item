@@ -14,10 +14,16 @@ SensorAirPressure::SensorAirPressure(std::string equipmentId, DataStorageUnit* d
 }
 
 
-std::string SensorAirPressure::CalculateData(std::string startTime, std::string endTime)
+std::vector<std::string> SensorAirPressure::CalculateData(std::string startTime, std::string endTime)
 {
     // Get data of current hour from database
     std::vector<std::string> historyData = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, "001", "001");
 
-    return "";
+    return 0;
 }
+
+void SensorAirPressure::StoreData(std::string data)
+{
+
+}
+

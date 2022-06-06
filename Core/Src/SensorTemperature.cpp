@@ -52,7 +52,6 @@ SensorTemperature::SensorTemperature(std::string equipmentId, DataStorageUnit* d
 
 }
 
-
 void SensorTemperature::StoreData(std::string data)
 {
     auto dataBase = dataStorageUnit->GetDataBase();
@@ -72,7 +71,7 @@ void SensorTemperature::StoreData(std::string data)
     }
 }
 
-std::string SensorTemperature::CalculateData(std::string startTime, std::string endTime)
+std::vector<std::string> SensorTemperature::CalculateData(std::string startTime, std::string endTime)
 {
     // Get data of current hour from database table 002
     auto dataBase = dataStorageUnit->GetDataBase();
@@ -81,7 +80,21 @@ std::string SensorTemperature::CalculateData(std::string startTime, std::string 
     std::string AAAa;
     std::string AAAb;
     std::string AAAc;
+    std::string AAAd;
     std::string AAAi;
+
+    // Get latest AAA data between startTime and endTime
+    std::string sql = "SELECT * FROM 002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "' ORDER BY TIME DESC LIMIT 1";
+    rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        std::cout << "SQL error: " << sqlite3_errmsg(database) << std::endl;
+        sqlite3_close(database);
+    }
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        AAA = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+    }
 
     // Get max AAA value
     std::string sql = "SELECT MAX(AAA) FROM 002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "'";
@@ -96,13 +109,13 @@ std::string SensorTemperature::CalculateData(std::string startTime, std::string 
     {
         while (sqlite3_step(stmt) == SQLITE_ROW)
         {
-            std::string maxAAA = std::string((const char*)sqlite3_column_text(stmt, 0));
-            std::cout << "Max AAA: " << maxAAA << std::endl;
+            std::string AAAa = std::string((const char*)sqlite3_column_text(stmt, 0));
+            std::cout << "Max AAA: " << AAA << std::endl;
         }
     }
 
     // For max AAA value, get time
-    sql = "SELECT TIME FROM 002 WHERE AAA = '" + maxAAA + "'";
+    sql = "SELECT TIME FROM 002 WHERE AAA = '" + AAAa + "'";
     rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
     if (rc != SQLITE_OK)
     {
@@ -113,23 +126,77 @@ std::string SensorTemperature::CalculateData(std::string startTime, std::string 
     {
         while (sqlite3_step(stmt) == SQLITE_ROW)
         {
-            std::string maxTime = std::string((const char*)sqlite3_column_text(stmt, 0));
-            std::cout << "Max time: " << maxTime << std::endl;
+            std::string AAAb = std::string((const char*)sqlite3_column_text(stmt, 0));
+            std::cout << "Max time: " << AAAb << std::endl;
         }
     }
 
-    std::vector<int> temperature;
-    for(auto data : historyData)
+    // Get min AAAc value
+    sql = "SELECT MIN(AAA) FROM 002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "'";
+    rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
     {
-        // Split data by comma
-        std::vector<std::string> elements = Split(data, ',');
-        temperature.push_back(std::stoi(elements[14]));
+        std::cout << "SQL error: " << sqlite3_errmsg(database) << std::endl;
+        sqlite3_close(database);
+    }
+    else
+    {
+        while (sqlite3_step(stmt) == SQLITE_ROW)
+        {
+            std::string AAAc = std::string((const char*)sqlite3_column_text(stmt, 0));
+            std::cout << "Min AAAc: " << AAAc << std::endl;
+        }
     }
 
-    // Order temperature
-    std::sort(temperature.begin(), temperature.end());
 
+    // For min AAAc value, get time
+    sql = "SELECT TIME FROM 002 WHERE AAA = '" + AAAc + "'";
+    rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        std::cout << "SQL error: " << sqlite3_errmsg(database) << std::endl;
+        sqlite3_close(database);
+    }
+    else
+    {
+        while (sqlite3_step(stmt) == SQLITE_ROW)
+        {
+            std::string AAAd = std::string((const char*)sqlite3_column_text(stmt, 0));
+            std::cout << "Min time: " << AAAd << std::endl;
+        }
+    }
 
+    // Get average AAA value
+    sql = "SELECT AVG(AAA) FROM 002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "'";
+    rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        std::cout << "SQL error: " << sqlite3_errmsg(database) << std::endl;
+        sqlite3_close(database);
+    }
+    else
+    {
+        while (sqlite3_step(stmt) == SQLITE_ROW)
+        {
+            std::string AAAi = std::string((const char*)sqlite3_column_text(stmt, 0));
+            std::cout << "Average AAA: " << AAAi << std::endl;
+        }
+    }
 
-    return "";
+    std::vector<std::string> outputData;
+
+    outputData.push_back("AAA");
+    outputData.push_back(AAA);
+    outputData.push_back("AAAa");
+    outputData.push_back(AAAa);
+    outputData.push_back("AAAb");
+    outputData.push_back(AAAb);
+    outputData.push_back("AAAc");
+    outputData.push_back(AAAc);
+    outputData.push_back("AAAd");
+    outputData.push_back(AAAd);
+    outputData.push_back("AAAi");
+    outputData.push_back(AAAi);
+
+    return outputData;
 }

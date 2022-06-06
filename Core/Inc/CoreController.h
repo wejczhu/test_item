@@ -16,6 +16,7 @@
 #include <time.h>
 
 #include <iostream>
+#include <map>
 
 #define COMMAND_BADCOMMAND "Bad Command"
 #define COMMAND_READ_DATA "READDATA"
@@ -170,7 +171,7 @@ public:
     void CollectData_5_Min(void);
     void CollectData_1_Hour(void);
 
-    void RegisterSensor(Sensor *sensor);
+    void RegisterSensor(std::string sensorId, Sensor *sensor);
     bool IsSensorValid(std::string registerInfo);
 
     void HandleSensorConnectionRequest(std::string sensorId, std::string connectionTime, std::string requestMD5);
@@ -184,10 +185,10 @@ public:
     void CheckMissingData(std::string time);
 
     void CalculateHourClimateData(std::string startTime, std::string endTime);
-    std::string CalculateHourClimateData_Air_Pressure(std::string startTime, std::string endTime);
 
-
-    void GenerateClimateMessage(std::string measureData);
+    std::string GenerateClimateMessage(std::string measureData);
+    std::vector<std::string> GenerateClimateMessageHeader();
+    std::vector<std::string> GenerateClimateMessageMain(std::string startTime, std::string endTime);
 
 private:
     static CoreController *mInstance;
@@ -228,7 +229,7 @@ private:
     UartUser* mUartUserGps;
     UartUser* mUartUserGprs;
 
-    std::vector<Sensor*> mSensors;
+    std::map<std::string, Sensor*> mSensors;
 
     const static uint8_t DATA_SEND_START_TIME = 5;
     const static uint8_t MAX_SENSOR_NUMBER = 10;
