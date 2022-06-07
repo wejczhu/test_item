@@ -27,3 +27,24 @@ void SensorAirPressure::StoreData(std::string data)
 
 }
 
+std::string SensorAirPressure::GetQualityControlBit()
+{
+    return "";
+}
+
+uint8_t SensorAirPressure::GetNumberOfMeasureElement()
+{
+    return 1;
+}
+
+uint8_t SensorAirPressure::GetNumberOfEquipmentStatus()
+{
+    return 1;
+}
+
+std::vector<std::string> SensorAirPressure::GetStatusInfo(std::string startTime, std::string endTime)
+{
+    std::vector<std::string> status;
+    return status;
+}
+

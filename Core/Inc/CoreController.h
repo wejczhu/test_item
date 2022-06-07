@@ -185,6 +185,10 @@ public:
     void CheckMissingData(std::string time);
 
     void CalculateHourClimateData(std::string startTime, std::string endTime);
+    std::vector<std::string> GenerateClimateMessage_Measurement(std::string startTime, std::string endTime);
+    std::vector<std::string> GenerateClimateMessage_StatusInfo(std::string startTime, std::string endTime);
+
+    bool AutoCheck();
 
     std::string GenerateClimateMessage(std::string measureData);
     std::vector<std::string> GenerateClimateMessageHeader();

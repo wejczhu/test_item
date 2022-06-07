@@ -27,7 +27,12 @@ public:
     DataStorageUnit* GetDataStorageUnit();
 
     virtual std::vector<std::string> CalculateData(std::string startTime, std::string endTime) = 0;
+    virtual std::vector<std::string> GetStatusInfo(std::string startTime, std::string endTime) = 0;
+    virtual std::string GetQualityControlBit() = 0;
     virtual void StoreData(std::string data) = 0;
+
+    virtual uint8_t GetNumberOfMeasureElement() = 0;
+    virtual uint8_t GetNumberOfEquipmentStatus() = 0;
 
 private:
     bool mIsActive;

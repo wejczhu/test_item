@@ -200,3 +200,28 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
 
     return outputData;
 }
+
+std::string SensorTemperature::GetQualityControlBit()
+{
+    return "0000";
+}
+
+uint8_t SensorTemperature::GetNumberOfMeasureElement()
+{
+    return 6;
+}
+
+uint8_t SensorTemperature::GetNumberOfEquipmentStatus()
+{
+    return 1;
+}
+
+std::vector<std::string> SensorTemperature::GetStatusInfo(std::string startTime, std::string endTime)
+{
+    std::vector<std::string> statusInfo;
+
+    outputData.push_back("y_AAA");
+    outputData.push_back("0");
+
+    return statusInfo;
+}
