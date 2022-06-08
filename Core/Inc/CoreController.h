@@ -190,7 +190,10 @@ public:
 
     bool AutoCheck();
 
-    std::string GenerateClimateMessage(std::string measureData);
+    void CreateDatabaseTable();
+    void InsertData(std::string data);
+
+    std::string GenerateClimateMessage(std::string startTime, std::string endTime);
     std::vector<std::string> GenerateClimateMessageHeader();
     std::vector<std::string> GenerateClimateMessageMain(std::string startTime, std::string endTime);
 

@@ -36,8 +36,9 @@ CoreController::CoreController()
     mUartUserSensor = new UartUser(mClimateDataHandler);
     //mUartUserCommand = new UartUser(mCommandDataHandler);
 
-   // mTimer1Minute = new Timer(1, std::bind(&CoreController::TimeEventHandler, this));
+    // mTimer1Minute = new Timer(1, std::bind(&CoreController::TimeEventHandler, this));
     mTimerStorage = new Timer(1, std::bind(&CoreController::OnTimeEvent_StorageData, this));
+    CreateDatabaseTable();
 }
 
 CoreController::~CoreController()
@@ -54,6 +55,39 @@ CoreController::~CoreController()
     mClimateDataHandler = nullptr;
     mCommandDataHandler = nullptr;
 }
+
+void CoreController::CreateDatabaseTable()
+{
+    auto database = GetDataStorageUnit()->GetDatabase();
+    // Create new table of database if not exist
+    std::string sql = "CREATE TABLE IF NOT EXISTS 000 (" \
+                      "TIME TEXT NOT NULL," \
+                      "DATA TEXT NOT NULL," \
+                      "FILTER INT NOT NULL)";
+
+    auto rc = sqlite3_exec(database, sql.c_str(), NULL, NULL, NULL);
+    if (rc != SQLITE_OK)
+    {
+        std::cout << "SQL error: " << sqlite3_errmsg(database) << std::endl;
+        sqlite3_close(database);
+    }
+    {
+        std::cout << "Table climate_data created successfully" << std::endl;
+    }
+}
+
+void CoreController::InsertData(std::string data)
+{
+    auto database = GetDataStorageUnit()->GetDatabase();
+    std::string sql = "INSERT INTO 000 (TIME, DATA, FILTER) VALUES ('" + mClimateDataHandler->GetTime() + "', '" + mClimateDataHandler->GetData() + "', " + std::to_string(mClimateDataHandler->GetFilter()) + ")";
+    auto rc = sqlite3_exec(database, sql.c_str(), NULL, NULL, NULL);
+    if (rc != SQLITE_OK)
+    {
+        std::cout << "SQL error: " << sqlite3_errmsg(database) << std::endl;
+        sqlite3_close(database);
+    }
+}
+
 
 void CoreController::HandleSystemTime(std::vector<std::string> command)
 {
@@ -606,9 +640,9 @@ void CoreController::OnTimeEvent_SensorData_1Min()
 void CoreController::OnTimeEvent_SensorData_1Hour()
 {
     // Get current time
-    std::string CurrentTime = GetSystemTime();
+    std::string CurrentTime = RemoveNonNumeric(GetSystemDateAndTime());
+
     // Check if second is zero
-    
     std::string second = CurrentTime.substr(CurrentTime.size() - 2, 2);
     std::string minute = CurrentTime.substr(CurrentTime.size() - 4, 2);
     std::string hour = CurrentTime.substr(CurrentTime.size() - 6, 2);
@@ -617,7 +651,12 @@ void CoreController::OnTimeEvent_SensorData_1Hour()
     {
         if(minute == "59" && (second == "21" || second == "22" || second == "23"))
         {
-            CollectData_1_Hour();
+            auto startTime = currentTime.substr(0, currentTime.size() - 4) + "0000";
+            auto endTime = currentTime.substr(0, currentTime.size() - 4) + "5959";
+            std::string climateData = GenerateClimateMessage(startTime, endTime);
+            mUartUserCommand->SendData(climateData);
+            
+            Storage
             m1HourFinish = true;
         }
     }
@@ -654,7 +693,7 @@ void CoreController::OnTimeEvent_StorageData()
 
             for(auto sensor : mSensors)
             {
-                std::string sensorId = sensor->GetEquipmentId();
+                std::string sensorId = sensor.first;
                 std::vector<std::string> history_1_min = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, sensorId, "001");
                 std::vector<std::string> history_5_min = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, sensorId, "005");
                 std::vector<std::string> history_1_hour = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, sensorId, "160");
@@ -744,7 +783,7 @@ void CoreController::OnTimeEvent_Time_Calibration()
 
             for(auto sensor : mSensors)
             {
-                std::string command = SENSOR_COMMAND_HEADER_GENERAL + sensor->GetEquipmentId() + "," + currentDate + "," + currentTime;
+                std::string command = SENSOR_COMMAND_HEADER_GENERAL + sensor.first + "," + currentDate + "," + currentTime;
                 mUartUserSensor->SendData(command);
             }
         }
@@ -783,7 +822,7 @@ void CoreController::CheckMissingData(std::string time)
     {
         // Get necessary data item
         std::vector<std::string> data;
-        std::string sensorId = sensor->GetEquipmentId();
+        std::string sensorId = sensor.first;
         bool ret = mStorageUnit->GetLatestClimateDataByTimeAndId(time, sensorId, data);
 
         if(!ret)
@@ -799,10 +838,10 @@ void CoreController::CollectData_1_Min(void)
     // If sensor working in waiting mode, send read data command to it.
     for(auto sensor : mSensors)
     {
-        if(!sensor->GetIsAutoSend())
+        if(!sensor.second->GetIsAutoSend())
         {
             // Send read data command to this sensor
-            std::string command = SENSOR_COMMAND_HEADER_GENERAL + sensor->GetEquipmentId() + SENSOR_COMMAND_READ_DATA;
+            std::string command = SENSOR_COMMAND_HEADER_GENERAL + sensor.first + SENSOR_COMMAND_READ_DATA;
             mUartUserCommand->SendData(command);
         }
     }
@@ -812,36 +851,6 @@ void CoreController::CollectData_5_Min(void)
 {
 
 }
-
-void CoreController::CollectData_1_Hour(void)
-{
-    // Generate time minute array of current hour
-    std::vector<std::string> timeMinuteArray;
-    std::string currentTime = GetSystemDateAndTime();
-    // Remove last 4 char of current time
-    auto startTime = currentTime.substr(0, currentTime.size() - 4) + "0000";
-    auto endTime = currentTime.substr(0, currentTime.size() - 4) + "5959";
-
-    for (auto sensor : mSensors)
-    {
-        std::string sensorId = sensor->GetEquipmentId();
-        auto hourData = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, sensorId, "001");
-        // Check if data is missing
-        for(auto data : hourData)
-        {
-            // Check if data is missing
-            
-        }
-    }
-
-
-
-}
-
-
-
-
-
 
 void CoreController::HandleSensorConnectionRequest(std::string sensorId, std::string connectionTime, std::string requestMD5)
 {
@@ -890,16 +899,7 @@ void CoreController::HandleSensorConnectionRequest(std::string sensorId, std::st
     }
 }
 
-void CoreController::CalculateHourClimateData(std::string startTime, std::string endTime)
-{
-    // Calculate hour climate data
-    for(auto sensor : mSensors)
-    {
-        
-    }
-}
-
-std::string CoreController::GenerateClimateMessage(std::string measureData)
+std::string CoreController::GenerateClimateMessage(std::string startTime, std::string endTime)
 {
 
     std::vector<std::string> climateData;
@@ -910,9 +910,8 @@ std::string CoreController::GenerateClimateMessage(std::string measureData)
     auto header = GenerateClimateMessageHeader();
     climateData.insert(climateData.end(), header.begin(), header.end());
 
-    auto main = GenerateClimateMessageMain();
+    auto main = GenerateClimateMessageMain(startTime, endTime);
     climateData.insert(climateData.end(), main.begin(), main.end());
-
 
     // Calculate CRC
     std::string finalMessage;
@@ -966,7 +965,7 @@ std::vector<std::string> CoreController::GenerateClimateMessageHeader()
 
     header.push_back(std::to_string(numberOfMeasureElement));
 
-    //
+    // 
     uint8_t numberOfEquipmentStatus = 0;
     for(auto sensor : mSensors)
     {
@@ -1104,7 +1103,7 @@ bool CoreController::IfSensorExist(std::string sensorId)
 {
     for(auto sensor : mSensors)
     {
-        if(sensor.second->GetEquipmentId() == sensorId)
+        if(sensor.first == sensorId)
         {
             return true;
         }
