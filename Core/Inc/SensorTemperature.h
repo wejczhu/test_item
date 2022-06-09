@@ -18,6 +18,9 @@ public:
     void CheckMissingData(std::string startTime, std::string endTime, std::string filter) override;
     uint8_t GetNumberOfMeasureElement() override;
     uint8_t GetNumberOfEquipmentStatus() override;
+
+    // Command
+    void Command_ReadData() override;
 private:
     std::vector<std::string> mElements;
 };

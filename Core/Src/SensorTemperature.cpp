@@ -250,6 +250,11 @@ void SensorTemperature::CheckMissingData(std::string startTime, std::string endT
     }
 
     // Check if data is missing
-    
+     
 
+}
+
+void SensorTemperature::Command_ReadData()
+{
+    
 }

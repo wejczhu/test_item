@@ -4,6 +4,13 @@
 #include <string>
 #include "DataStorageUnit.h"
 
+#define SENSOR_COMMAND_HEADER_GENERAL "#"
+#define SENSOR_COMMAND_HEADER_SPECIAL "$"
+#define SENSOR_COMMAND_HEADER_TRANSPARENT "&"
+#define SENSOR_COMMAND_CONNECTION_INFO "CI"
+#define SENSOR_COMMAND_READ_DATA "DM"
+#define SENSOR_COMMAND_DATE_AND_TIME "DT"
+
 class Sensor
 {
 public:
@@ -34,6 +41,10 @@ public:
 
     virtual uint8_t GetNumberOfMeasureElement() = 0;
     virtual uint8_t GetNumberOfEquipmentStatus() = 0;
+
+    // Command for sensor
+    virtual void Command_ReadData() = 0;
+    virtual void Command_RegisterRequest();
 
 private:
     bool mIsActive;

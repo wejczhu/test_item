@@ -50,3 +50,8 @@ DataStorageUnit* Sensor::GetDataStorageUnit()
 {
     return mStorageUnit;
 }
+
+void Sensor::Command_RegisterRequest()
+{
+    
+}

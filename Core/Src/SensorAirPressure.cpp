@@ -53,3 +53,8 @@ void SensorAirPressure::CheckMissingData(std::string startTime, std::string endT
 {
 
 }
+
+void SensorAirPressure::Command_ReadData()
+{
+    
+}
