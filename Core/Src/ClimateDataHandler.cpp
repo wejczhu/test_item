@@ -24,10 +24,19 @@ void ClimateDataHandler::ParseData(std::vector<std::string> data, std::string or
         return;
     }
 
-    std::string time = data[9];
-    std::string filter = data[10];
+    // Check id number from data
+    std::string sensorId = data[8];
 
-    StoreData(time, originalData, filter);
+    // Search for sensor id in sensor list
+    Sensor* sensor = mController->GetSensorById(sensorId);
+    if(sensor == nullptr)
+    {
+        std::cerr << "Id " << sensorId << " is not registered, this data will be ignored" << std::endl;
+        return;
+    }
+
+    // Store data into sensor's database
+    sensor->StoreData(data, originalData);
 
     // mClimateDataHead.mDataVersionNumber = data[VERSION_NUMBER];
     // mClimateDataHead.mDataZoneNumber = data[ZONE_NUMBER];

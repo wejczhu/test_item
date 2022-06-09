@@ -624,7 +624,7 @@ void CoreController::OnTimeEvent_SensorData_1Min()
             std::string time = GetSystemDateAndTime();
             time = RemoveNonNumeric(time);
 
-            CheckMissingData(time);
+            CheckMissingData();
             mCheck1MinFinish = true;
         }
     }
@@ -816,20 +816,11 @@ void CoreController::OnTimeEvent_Time_Calibration()
 // }
 
 
-void CoreController::CheckMissingData(std::string time)
+void CoreController::CheckMissingData(std::string startTime, std::string endTime, std::string filter)
 {
     for(auto sensor : mSensors)
     {
-        // Get necessary data item
-        std::vector<std::string> data;
-        std::string sensorId = sensor.first;
-        bool ret = mStorageUnit->GetLatestClimateDataByTimeAndId(time, sensorId, data);
-
-        if(!ret)
-        {
-            std::string command = SENSOR_COMMAND_HEADER_GENERAL + sensorId + SENSOR_COMMAND_READ_DATA;
-            mUartUserSensor->SendData(command);
-        }
+        sensor.second->CheckMissingData(startTime, endTime, filter);
     }
 }
 
@@ -1114,4 +1105,16 @@ bool CoreController::IfSensorExist(std::string sensorId)
 DataStorageUnit* CoreController::GetDataStorageUnit()
 {
     return mStorageUnit;
+}
+
+Sensor* CoreController::GetSensorById(std::string sensorId)
+{
+    // Find sensor id in mSensors
+    auto it = mSensors.find(sensorId);
+    if(it != mSensors.end())
+    {
+        return it->second;
+    }
+
+    return nullptr;
 }

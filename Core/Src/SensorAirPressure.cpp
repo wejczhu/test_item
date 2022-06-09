@@ -22,7 +22,7 @@ std::vector<std::string> SensorAirPressure::CalculateData(std::string startTime,
     return 0;
 }
 
-void SensorAirPressure::StoreData(std::string data)
+void SensorAirPressure::StoreData(std::vector<std::string> data, std::string originalData)
 {
 
 }
@@ -48,3 +48,8 @@ std::vector<std::string> SensorAirPressure::GetStatusInfo(std::string startTime,
     return status;
 }
 
+
+void SensorAirPressure::CheckMissingData(std::string startTime, std::string endTime, std::string filter)
+{
+
+}

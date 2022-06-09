@@ -17,14 +17,14 @@ SensorTemperature::SensorTemperature(std::string zoneNumber, std::string service
                       "AAAl5i TEXT NOT NULL," \
                       "FILTER INT NOT NULL)";
 
-    rc = sqlite3_exec(database, sql.c_str(), NULL, NULL, NULL);
+    auto rc = sqlite3_exec(database, sql.c_str(), NULL, NULL, NULL);
     if (rc != SQLITE_OK)
     {
         std::cout << "SQL error: " << sqlite3_errmsg(database) << std::endl;
         sqlite3_close(database);
     }
     {
-        std::cout << "Table climate_data created successfully" << std::endl;
+        std::cout << "Table 002 created successfully" << std::endl;
     }
 }
 
@@ -54,17 +54,17 @@ SensorTemperature::SensorTemperature(std::string equipmentId, DataStorageUnit* d
 
 }
 
-void SensorTemperature::StoreData(std::string data)
+void SensorTemperature::StoreData(std::vector<std::string> data, std::string originalData)
 {
+    std::string time = data[9];
+    std::string filter = data[10];
+    std::string dataAAA = data[14];
+    std::string dataAAAI = data[16];
+    std::string dataAAA5i = data[18];
+    std::string dataAAAl5i = data[20];
     auto database = GetDataStorageUnit()->GetDatabase();
-    std::vector<std::string> elements = data.split(',');
-    std::string time = elements[9];
-    std::string filter = elements[10];
-    std::string dataAAA = elements[14];
-    std::string dataAAAI = elements[16];
-    std::string dataAAA5i = elements[18];
-    std::string dataAAAl5i = elements[20];
-    std::string sql = "INSERT INTO 002 (TIME, DATA, AAA, AAAI, AAA5i, AAAl5i, FILTER) VALUES ('" + time + "', '" + data + "', '" + dataAAA + "', '" + dataAAAI + "', '" + dataAAA5i + "', '" + dataAAAl5i + "', " + filter + ")";
+
+    std::string sql = "INSERT INTO 002 (TIME, DATA, AAA, AAAI, AAA5i, AAAl5i, FILTER) VALUES ('" + time + "', '" + originalData + "', '" + dataAAA + "', '" + dataAAAI + "', '" + dataAAA5i + "', '" + dataAAAl5i + "', " + filter + ")";
     int rc = sqlite3_exec(database, sql.c_str(), NULL, NULL, NULL);
     if (rc != SQLITE_OK)
     {
@@ -226,4 +226,30 @@ std::vector<std::string> SensorTemperature::GetStatusInfo(std::string startTime,
     statusInfo.push_back("0");
 
     return statusInfo;
+}
+
+void SensorTemperature::CheckMissingData(std::string startTime, std::string endTime, std::string filter)
+{
+    auto database = GetDataStorageUnit()->GetDatabase();
+    // Get data from database between startTime and endTime and FILTER equal to filter
+    std::string sql = "SELECT * FROM 002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "' AND FILTER = '" + filter + "'";
+    sqlite3_stmt* stmt;
+    auto rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        std::cout << "SQL error: " << sqlite3_errmsg(database) << std::endl;
+        sqlite3_close(database);
+    }
+
+    // iterate over the columns to get the data
+    std::vector<std::string> data;
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        auto temp = sqlite3_column_text(stmt, 1);
+        data.push_back(std::string(reinterpret_cast<const char*>(temp)));
+    }
+
+    // Check if data is missing
+    
+
 }

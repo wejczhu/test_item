@@ -182,7 +182,7 @@ public:
     void SendRegisterRequestToAllSensors();
     bool IfSensorExist(std::string sensorId);
 
-    void CheckMissingData(std::string time);
+    void CheckMissingData(std::string startTime, std::string endTime, std::string filter);
 
     void CalculateHourClimateData(std::string startTime, std::string endTime);
     std::vector<std::string> GenerateClimateMessage_Measurement(std::string startTime, std::string endTime);
@@ -196,6 +196,8 @@ public:
     std::string GenerateClimateMessage(std::string startTime, std::string endTime);
     std::vector<std::string> GenerateClimateMessageHeader();
     std::vector<std::string> GenerateClimateMessageMain(std::string startTime, std::string endTime);
+
+    Sensor* GetSensorById(std::string sensorId);
 
 private:
     static CoreController *mInstance;
