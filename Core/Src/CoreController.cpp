@@ -1086,19 +1086,19 @@ void CoreController::SendRegisterRequestToAllSensors()
         std::string registerCommand = SENSOR_COMMAND_HEADER_GENERAL + sensorId + SENSOR_COMMAND_CONNECTION_INFO;
 
         // Send request to sensor
+        std::cout << "Send register request to sensor: " << sensorId << std::endl;
         mUartUserSensor->SendData(registerCommand);
     }
 }
 
 bool CoreController::IfSensorExist(std::string sensorId)
 {
-    for(auto sensor : mSensors)
+    auto it = mSensors.find(sensorId);
+    if(it != mSensors.end())
     {
-        if(sensor.first == sensorId)
-        {
-            return true;
-        }
+        return true;
     }
+
     return false;
 }
 

@@ -49,12 +49,12 @@ std::vector<std::string> SensorAirPressure::GetStatusInfo(std::string startTime,
 }
 
 
-void SensorAirPressure::CheckMissingData(std::string startTime, std::string endTime, std::string filter)
+std::vector<std::string> SensorAirPressure::CheckMissingData(std::string startTime, std::string endTime, std::string filter)
 {
 
 }
 
 void SensorAirPressure::Command_ReadData()
 {
-    
+
 }

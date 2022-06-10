@@ -57,6 +57,10 @@ SensorTemperature::SensorTemperature(std::string equipmentId, DataStorageUnit* d
 void SensorTemperature::StoreData(std::vector<std::string> data, std::string originalData)
 {
     std::string time = data[9];
+    // Ignore second info of time, change second to 00
+    // replace last char of time to 00
+    time.replace(time.size() - 2, 2, "00");
+    
     std::string filter = data[10];
     std::string dataAAA = data[14];
     std::string dataAAAI = data[16];
@@ -228,8 +232,9 @@ std::vector<std::string> SensorTemperature::GetStatusInfo(std::string startTime,
     return statusInfo;
 }
 
-void SensorTemperature::CheckMissingData(std::string startTime, std::string endTime, std::string filter)
+std::vector<std::string> SensorTemperature::CheckMissingData(std::string startTime, std::string endTime, std::string filter)
 {
+    std::cout << "Start to check missing data for sensor 002" << std::endl;
     auto database = GetDataStorageUnit()->GetDatabase();
     // Get data from database between startTime and endTime and FILTER equal to filter
     std::string sql = "SELECT * FROM 002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "' AND FILTER = '" + filter + "'";
@@ -245,16 +250,28 @@ void SensorTemperature::CheckMissingData(std::string startTime, std::string endT
     std::vector<std::string> data;
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-        auto temp = sqlite3_column_text(stmt, 1);
+        auto temp = sqlite3_column_text(stmt, 0);
         data.push_back(std::string(reinterpret_cast<const char*>(temp)));
     }
 
     // Check if data is missing
-     
+    std::vector<std::string> missData;
+    int min = std::stoi(startTime);
+    int max = std::stoi(endTime);
+    std::vector<std::string> missData;
+    for(int i = min; i < max; i++)
+    {
+        // check if i is in data
+        if (std::find(data.begin(), data.end(), std::to_string(i)) == data.end())
+        {
+            missData.push_back(std::to_string(i));
+        }
+    }
 
+    return missData;
 }
 
 void SensorTemperature::Command_ReadData()
 {
-    
+    std::string command = "";
 }

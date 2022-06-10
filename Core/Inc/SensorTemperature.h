@@ -15,7 +15,7 @@ public:
     std::string GetQualityControlBit() override;
     std::vector<std::string> GetStatusInfo(std::string startTime, std::string endTime) override;
     void StoreData(std::vector<std::string> data, std::string originalData) override;
-    void CheckMissingData(std::string startTime, std::string endTime, std::string filter) override;
+    std::vector<std::string> CheckMissingData(std::string startTime, std::string endTime, std::string filter) override;
     uint8_t GetNumberOfMeasureElement() override;
     uint8_t GetNumberOfEquipmentStatus() override;
 
