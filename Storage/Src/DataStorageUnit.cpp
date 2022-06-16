@@ -33,7 +33,7 @@ void DataStorageUnit::Initialize()
     // }
 
     // Create table climate data
-    std::string sql = "CREATE TABLE IF NOT EXISTS climate_data (" \
+    std::string sql = "CREATE TABLE IF NOT EXISTS CoreController (" \
                       "ID TEXT NO NULL," \
                       "TIME TEXT NOT NULL," \
                       "DATA TEXT NOT NULL," \
@@ -46,13 +46,13 @@ void DataStorageUnit::Initialize()
         sqlite3_close(mDatabase);
     }
     {
-        std::cout << "Table climate_data created successfully" << std::endl;
+        std::cout << "Table CoreController created successfully" << std::endl;
     }
 }
 
 void DataStorageUnit::InsertClimateData(std::string id, std::string time, std::string data, std::string filter)
 {
-    std::string sql = "INSERT INTO climate_data (ID, TIME, DATA, FILTER) VALUES ('" + id + "', '" + time + "', '" + data + "', " + filter + ")";
+    std::string sql = "INSERT INTO CoreController (ID, TIME, DATA, FILTER) VALUES ('" + id + "', '" + time + "', '" + data + "', " + filter + ")";
     int rc = sqlite3_exec(mDatabase, sql.c_str(), NULL, NULL, NULL);
     if (rc != SQLITE_OK)
     {
@@ -66,7 +66,7 @@ void DataStorageUnit::InsertClimateData(std::string id, std::string time, std::s
 
 std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string time1, std::string time2)
 {
-    std::string sql = "SELECT * FROM climate_data WHERE TIME BETWEEN '" + time1 + "' AND '" + time2 + "'";
+    std::string sql = "SELECT * FROM CoreController WHERE TIME BETWEEN '" + time1 + "' AND '" + time2 + "'";
     sqlite3_stmt* t_statement;
     int rc = sqlite3_prepare_v2(mDatabase, sql.c_str(), -1, &t_statement, NULL);
     if (rc != SQLITE_OK)
@@ -88,7 +88,7 @@ std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string 
 
 std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string time1, std::string time2, std::string id)
 {
-    std::string sql = "SELECT * FROM climate_data WHERE TIME BETWEEN '" + time1 + "' AND '" + time2 + "' AND ID = " + id;
+    std::string sql = "SELECT * FROM CoreController WHERE TIME BETWEEN '" + time1 + "' AND '" + time2 + "' AND ID = " + id;
     sqlite3_stmt* t_statement;
     int rc = sqlite3_prepare_v2(mDatabase, sql.c_str(), -1, &t_statement, NULL);
     if (rc != SQLITE_OK)
@@ -110,7 +110,7 @@ std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string 
 
 std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string time1, std::string time2, std::string id, std::string filter)
 {
-    std::string sql = "SELECT * FROM climate_data WHERE TIME BETWEEN '" + time1 + "' AND '" + time2 + "' AND ID = " + id + " AND FILTER = " + filter;
+    std::string sql = "SELECT * FROM CoreController WHERE TIME BETWEEN '" + time1 + "' AND '" + time2 + "' AND ID = " + id + " AND FILTER = " + filter;
     sqlite3_stmt* t_statement;
     int rc = sqlite3_prepare_v2(mDatabase, sql.c_str(), -1, &t_statement, NULL);
     if (rc != SQLITE_OK)
@@ -130,10 +130,9 @@ std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string 
     return data;
 }
 
-
 std::vector<std::string> DataStorageUnit::GetLatestClimateDataByFilter(std::string filter)
 {
-    std::string sql = "SELECT * FROM climate_data WHERE FILTER = " + filter + " ORDER BY TIME DESC LIMIT 1";
+    std::string sql = "SELECT * FROM CoreController WHERE FILTER = " + filter + " ORDER BY TIME DESC LIMIT 1";
     sqlite3_stmt* t_statement;
     int rc = sqlite3_prepare_v2(mDatabase, sql.c_str(), -1, &t_statement, NULL);
     if (rc != SQLITE_OK)
@@ -157,7 +156,7 @@ bool DataStorageUnit::GetLatestClimateDataByTimeAndId(std::string time, std::str
 {
     // Replace last 2 character of time to *
     time = time.substr(0, time.size() - 2) + "**";
-    std::string sql = "SELECT * FROM climate_data WHERE TIME = '" + time + "' AND ID = '" + id + "'";
+    std::string sql = "SELECT * FROM CoreController WHERE TIME = '" + time + "' AND ID = '" + id + "'";
     sqlite3_stmt* t_statement;
     int rc = sqlite3_prepare_v2(mDatabase, sql.c_str(), -1, &t_statement, NULL);
     if (rc != SQLITE_OK)
@@ -215,7 +214,7 @@ bool DataStorageUnit::WriteJsonFile(const std::string& tag, const std::string& i
     }
 
     mJsonFile.close();
-    mJsonRoot[tag] = info;
+    mJsonRoot["controller_config"][tag] = info;
 
     Json::StyledWriter mJsonWriter;
     std::string json_str = mJsonWriter.write(mJsonRoot);
@@ -223,7 +222,8 @@ bool DataStorageUnit::WriteJsonFile(const std::string& tag, const std::string& i
     std::ofstream outputFileStream(DATA_STORAGE_UNIT_JSON_FILE_PATH);
 
     outputFileStream << json_str;
-    //writer -> write(rootJsonValue, &outputFileStream);
+
+    return true;
 }
 
 sqlite3* DataStorageUnit::GetDatabase()
