@@ -2,7 +2,7 @@
 
 SensorAirPressure::SensorAirPressure(std::string zoneNumber, std::string serviceType,
         std::string equipmentIdentification, std::string equipmentId, DataStorageUnit* dataStorageUnit)
-: Sensor(zoneNumber, serviceType, equipmentIdentification, equipmentId, DataStorageUnit* dataStorageUnit)
+: Sensor(zoneNumber, serviceType, equipmentIdentification, equipmentId, dataStorageUnit)
 {
 
 }
@@ -17,9 +17,9 @@ SensorAirPressure::SensorAirPressure(std::string equipmentId, DataStorageUnit* d
 std::vector<std::string> SensorAirPressure::CalculateData(std::string startTime, std::string endTime)
 {
     // Get data of current hour from database
-    std::vector<std::string> historyData = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, "001", "001");
+    std::vector<std::string> historyData = GetDataStorageUnit()->GetClimateDataBetweenTime(startTime, endTime, "001", "001");
 
-    return 0;
+    return historyData;
 }
 
 void SensorAirPressure::StoreData(std::vector<std::string> data, std::string originalData)
@@ -57,4 +57,9 @@ std::vector<std::string> SensorAirPressure::CheckMissingData(std::string startTi
 void SensorAirPressure::Command_ReadData()
 {
 
+}
+
+std::vector<std::string> SensorAirPressure::GetSensorData(std::string startTime, std::string endTime, std::string filter)
+{
+    
 }

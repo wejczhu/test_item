@@ -7,23 +7,8 @@ ClimateDataHandler::ClimateDataHandler(CoreController* controller)
     mController = controller;
 }
 
-void ClimateDataHandler::ParseData(std::vector<std::string> data, std::string originalData)
+void ClimateDataHandler::HandleClimateData(std::vector<std::string> data, std::string originalData)
 {
-    // Check if data is valid
-    if (data.front() != "BG" || data.back() != "ED\r\n")
-    {
-        if(data.front() == "!001CI" && (data.size() > 2))
-        {
-            mController->HandleSensorConnectionRequest(data);
-        }
-        else
-        {
-            std::cout << "Invalid data: " << originalData << std::endl;
-        }
-
-        return;
-    }
-
     // Check id number from data
     std::string sensorId = data[8];
 
@@ -37,6 +22,83 @@ void ClimateDataHandler::ParseData(std::vector<std::string> data, std::string or
 
     // Store data into sensor's database
     sensor->StoreData(data, originalData);
+}
+
+void ClimateDataHandler::HandleSensorCommand(std::vector<std::string> data, std::string originalData)
+{
+    auto firstSymbol = data.front().substr(0, 1);
+
+    if(firstSymbol == SENSOR_COMMAND_HEADER_RESPONSE)
+    {
+        // This is response from sensor
+        std::string command = data.front();
+        // Get last 2 char of command
+        command = command.substr(command.length() - 2);
+        std::string sensorId = data.front().substr(1, 3);
+        if(command == SENSOR_COMMAND_CONNECTION_INFO)
+        {
+            if(data.size() == 2)
+            {
+                // This is response from sensor
+                if(data[1] == "F")
+                {
+                    // Failed to register the sensor
+                    std::cerr << "Failed to register the sensor " << sensorId << std::endl;
+                }
+                else if(data[1] == "T")
+                {
+                    // Sensor is connected
+                    // Register sensor
+                    mController->RegisterSensor(sensorId);
+                }
+
+            }
+
+            std::string time = data[1];
+            std::string md5 = data[3];
+            mController->HandleSensorConnectionRequest(sensorId, time, md5);
+        }
+
+        
+    }
+
+
+
+
+
+
+    // if(command == SENSOR_COMMAND_CONNECTION_INFO)
+    // {
+    //     std::string time = data[1];
+    //     std::string md5 = data[3];
+    //     mController->HandleSensorConnectionRequest(sensorId, time, md5);
+    // }
+    // else if(command == SENSOR_COMMAND_READ_DATA)
+    // {
+
+    // }
+    // else if(command == SENSOR_COMMAND_DATE_AND_TIME)
+    // {
+
+    // }
+    // else
+    // {
+    //     std::cout << "invalid data:" << originalData << std::endl;
+    // }
+}
+
+
+void ClimateDataHandler::ParseData(std::vector<std::string> data, std::string originalData)
+{
+    // Check if data is sensor command
+    if (data.front() == "BG" && data.back() == "ED\r\n")
+    {
+        HandleClimateData(data, originalData);
+    }
+    else
+    {
+        HandleSensorCommand(data, originalData);
+    }
 
     // mClimateDataHead.mDataVersionNumber = data[VERSION_NUMBER];
     // mClimateDataHead.mDataZoneNumber = data[ZONE_NUMBER];
@@ -78,39 +140,6 @@ void ClimateDataHandler::ParseData(std::vector<std::string> data, std::string or
     // std::cout << "-------------------------------------" << std::endl;
 }
 
-void ParseSensorCommend(std::vector<std::string> data)
-{
-    // If data[0] last 2 char is "CI"
-    std::string command = data[0].substr(data[0].length() - 2, 2);
-
-    if(command == "CI")
-    {
-        // Check if sensor already exist
-        std::string sensorId = data[0].substr(1, 3);
-        if(!mController->IfSensorExist(sensorId))
-        {
-            std::string connectionTime = data[1];
-            std::string requestMD5 = data[3].substr(0, data[3].length() - 1);
-            mController->HandleSensorConnectionRequest(sensorId, connectionTime, requestMD5);
-        }
-
-        std::cout << "The sensor " << sensorId << " is already connected." << std::endl;
-    }
-    else if(command == "")
-    {
-
-    }
-    else if(command == "")
-    {
-
-    }
-    else
-    {
-        
-    }
-
-}
-
 void ClimateDataHandler::PrintDataHead()
 {
     std::cout << "Version Number: " << mClimateDataHead.mDataVersionNumber << std::endl;
@@ -137,7 +166,7 @@ void ClimateDataHandler::PrintDataMain()
     std::cout << "Quality Control: " << mClimateDataMain.mQualityControl << std::endl;
 }
 
-void ClimateDataHandler::StoreData(std::string time, std::string data, std::string filter)
-{
-    mController->GetDataStorageUnit()->InsertClimateData(time, data, filter);
-}
+// void ClimateDataHandler::StoreData(std::string time, std::string data, std::string filter)
+// {
+//     mController->GetDataStorageUnit()->InsertClimateData(time, data, filter);
+// }

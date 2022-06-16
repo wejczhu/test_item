@@ -5,12 +5,7 @@
 #include <algorithm>
 #include "DataStorageUnit.h"
 
-#define SENSOR_COMMAND_HEADER_GENERAL "#"
-#define SENSOR_COMMAND_HEADER_SPECIAL "$"
-#define SENSOR_COMMAND_HEADER_TRANSPARENT "&"
-#define SENSOR_COMMAND_CONNECTION_INFO "CI"
-#define SENSOR_COMMAND_READ_DATA "DM"
-#define SENSOR_COMMAND_DATE_AND_TIME "DT"
+
 
 class Sensor
 {
@@ -46,6 +41,8 @@ public:
     // Command for sensor
     virtual void Command_ReadData() = 0;
     virtual void Command_RegisterRequest();
+
+    virtual std::vector<std::string> GetSensorData(std::string startTime, std::string endTime, std::string filter) = 0;
 
 private:
     bool mIsActive;

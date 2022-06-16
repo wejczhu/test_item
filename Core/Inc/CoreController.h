@@ -59,6 +59,15 @@
 #define GPRS_WORK_STATUS "tQ"
 
 
+#define SENSOR_COMMAND_HEADER_RESPONSE "!"
+#define SENSOR_COMMAND_HEADER_GENERAL "#"
+#define SENSOR_COMMAND_HEADER_SPECIAL "$"
+#define SENSOR_COMMAND_HEADER_TRANSPARENT "&"
+#define SENSOR_COMMAND_CONNECTION_INFO "CI"
+#define SENSOR_COMMAND_READ_DATA "DM"
+#define SENSOR_COMMAND_DATE_AND_TIME "DT"
+#define SENSOR_COMMAND_DOWNLOAD_HISTORY "DO"
+
 
 
 #define SD_CARD_MOUNT_DIR "/run/media/mmcblk0p1"
@@ -166,7 +175,7 @@ public:
     void CollectData_5_Min(void);
     void CollectData_1_Hour(void);
 
-    void RegisterSensor(std::string sensorId, Sensor *sensor);
+    void RegisterSensor(std::string sensorId);
     bool IsSensorValid(std::string registerInfo);
 
     void HandleSensorConnectionRequest(std::string sensorId, std::string connectionTime, std::string requestMD5);
@@ -186,7 +195,7 @@ public:
     bool AutoCheck();
 
     void CreateDatabaseTable();
-    void InsertData(std::string data);
+    void InsertData(std::string time, std::string data, std::string filter);
 
     std::string GenerateClimateMessage(std::string startTime, std::string endTime);
     std::vector<std::string> GenerateClimateMessageHeader();

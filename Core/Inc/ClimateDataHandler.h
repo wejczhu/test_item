@@ -3,6 +3,7 @@
 
 #include "DataHandler.h"
 #include "CoreController.h"
+#include "Sensor.h"
 
 #include <vector>
 #include <map>
@@ -23,6 +24,10 @@ public:
     void PrintDataMain();
 
     void StoreData(std::string time, std::string data, std::string filter);
+
+    void HandleClimateData(std::vector<std::string> data, std::string originalData);
+
+    void HandleSensorCommand(std::vector<std::string> data, std::string originalData);
 
 private:
     ClimateDataHead mClimateDataHead;

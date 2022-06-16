@@ -53,5 +53,6 @@ DataStorageUnit* Sensor::GetDataStorageUnit()
 
 void Sensor::Command_RegisterRequest()
 {
-    
+    //std::string sensorId = GetEquipmentId();
+    //std::string command = 
 }

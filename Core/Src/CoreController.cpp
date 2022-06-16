@@ -36,9 +36,9 @@ CoreController::CoreController()
     mUartUserSensor = new UartUser(mClimateDataHandler);
     //mUartUserCommand = new UartUser(mCommandDataHandler);
 
-    // mTimer1Minute = new Timer(1, std::bind(&CoreController::TimeEventHandler, this));
-    mTimerStorage = new Timer(1, std::bind(&CoreController::OnTimeEvent_StorageData, this));
-    CreateDatabaseTable();
+    mTimer1Minute = new Timer(1, std::bind(&CoreController::OnTimeEvent_SensorData_1Min, this));
+    //mTimerStorage = new Timer(1, std::bind(&CoreController::OnTimeEvent_StorageData, this));
+    //CreateDatabaseTable();
 }
 
 CoreController::~CoreController()
@@ -60,26 +60,28 @@ void CoreController::CreateDatabaseTable()
 {
     auto database = GetDataStorageUnit()->GetDatabase();
     // Create new table of database if not exist
-    std::string sql = "CREATE TABLE IF NOT EXISTS 000 (" \
+
+    std::string sql = "CREATE TABLE IF NOT EXISTS CoreController (" \
                       "TIME TEXT NOT NULL," \
                       "DATA TEXT NOT NULL," \
                       "FILTER INT NOT NULL)";
 
-    auto rc = sqlite3_exec(database, sql.c_str(), NULL, NULL, NULL);
+    int rc = sqlite3_exec(database, sql.c_str(), NULL, NULL, NULL);
     if (rc != SQLITE_OK)
     {
         std::cout << "SQL error: " << sqlite3_errmsg(database) << std::endl;
         sqlite3_close(database);
     }
     {
-        std::cout << "Table climate_data created successfully" << std::endl;
+        std::cout << "Table CoreController created successfully" << std::endl;
     }
 }
 
-void CoreController::InsertData(std::string data)
+void CoreController::InsertData(std::string time, std::string data, std::string filter)
 {
     auto database = GetDataStorageUnit()->GetDatabase();
-    std::string sql = "INSERT INTO 000 (TIME, DATA, FILTER) VALUES ('" + mClimateDataHandler->GetTime() + "', '" + mClimateDataHandler->GetData() + "', " + std::to_string(mClimateDataHandler->GetFilter()) + ")";
+    std::string id = "000";
+    std::string sql = "INSERT INTO CoreController (ID, TIME, DATA, FILTER) VALUES ('" + id + "', '" + time + "', '" + data + "', " + filter + ")";
     auto rc = sqlite3_exec(database, sql.c_str(), NULL, NULL, NULL);
     if (rc != SQLITE_OK)
     {
@@ -87,7 +89,6 @@ void CoreController::InsertData(std::string data)
         sqlite3_close(database);
     }
 }
-
 
 void CoreController::HandleSystemTime(std::vector<std::string> command)
 {
@@ -328,7 +329,8 @@ void CoreController::HandleEquipmentZoneNumber(std::vector<std::string> command)
 {
     if(command.size() == 1)
     {
-        std::string zoneNumber = mStorageUnit->ReadJsonFile("equipment_zone_number").asString();
+        auto value = mStorageUnit->ReadJsonFile("controller_config");
+        std::string zoneNumber = value["equipment_zone_number"].asString();
         mUartUserCommand->SendData(zoneNumber);
     }
     else
@@ -349,7 +351,8 @@ void CoreController::HandleServiceType(std::vector<std::string> command)
 {
     if(command.size() == 1)
     {
-        std::string serviceType = mStorageUnit->ReadJsonFile("service_type").asString();
+        auto value = mStorageUnit->ReadJsonFile("controller_config");
+        std::string serviceType = value["service_type"].asString();
         mUartUserCommand->SendData(serviceType);
     }
     else
@@ -370,7 +373,8 @@ void CoreController::HandleEquipmentBit(std::vector<std::string> command)
 {
     if(command.size() == 1)
     {
-        std::string bitrate = mStorageUnit->ReadJsonFile("equipment_bit").asString();
+        auto value = mStorageUnit->ReadJsonFile("controller_config");
+        std::string bitrate = value["equipment_bit"].asString();
         mUartUserCommand->SendData(bitrate);
     }
     else
@@ -391,7 +395,8 @@ void CoreController::HandleEquipmentId(std::vector<std::string> command)
 {
     if(command.size() == 1)
     {
-        std::string equipmentId = mStorageUnit->ReadJsonFile("equipment_id").asString();
+        auto value = mStorageUnit->ReadJsonFile("controller_config");
+        std::string equipmentId = value["equipment_id"].asString();
         mUartUserCommand->SendData(equipmentId);
     }
     else
@@ -412,7 +417,8 @@ void CoreController::HandleLatitude(std::vector<std::string> command)
 {
     if(command.size() == 1)
     {
-        std::string latitude = mStorageUnit->ReadJsonFile("latitude").asString();
+        auto value = mStorageUnit->ReadJsonFile("controller_config");
+        std::string latitude = value["latitude"].asString();
         mUartUserCommand->SendData(latitude);
     }
     else
@@ -433,7 +439,8 @@ void CoreController::HandleLongitude(std::vector<std::string> command)
 {
     if(command.size() == 1)
     {
-        std::string longitude = mStorageUnit->ReadJsonFile("longitude").asString();
+        auto value = mStorageUnit->ReadJsonFile("controller_config");
+        std::string longitude = value["longitude"].asString();
         mUartUserCommand->SendData(longitude);
     }
     else
@@ -461,8 +468,18 @@ void CoreController::HandleHistoryDownload(std::vector<std::string> command)
         std::string endDate = command[3];
         std::string endTime = command[4];
         std::string end = RemoveNonNumeric(endDate + endTime);
-        history = mStorageUnit->GetClimateDataBetweenTime(start, end);
+        std::string filter = "001";
+        
+        std::vector<std::string> sensorData;
+        for(auto sensor : mSensors)
+        {
+            sensorData = sensor.second->GetSensorData(start, end, filter);
+            history.insert(history.end(), sensorData.begin(), sensorData.end());
+            sensorData.clear();
+        }
+
     }
+    // Get the hour data
     else if(command.size() == 6)
     {
         std::string startDate = command[1];
@@ -471,8 +488,22 @@ void CoreController::HandleHistoryDownload(std::vector<std::string> command)
         std::string endDate = command[3];
         std::string endTime = command[4];
         std::string end = RemoveNonNumeric(endDate + endTime);
-        std::string zoneNumber = command[5];
-        history = mStorageUnit->GetClimateDataBetweenTime(start, end, zoneNumber);
+        std::string filter = command[5];
+
+        if(filter == "005")
+        {
+            std::vector<std::string> sensorData;
+            for(auto sensor : mSensors)
+            {
+                sensorData = sensor.second->GetSensorData(start, end, filter);
+                history.insert(history.end(), sensorData.begin(), sensorData.end());
+                sensorData.clear();
+            }
+        }
+        else if(filter == "160")
+        {
+            history = mStorageUnit->GetClimateDataBetweenTime(start, end, filter);
+        }
     }
     else
     {
@@ -624,7 +655,12 @@ void CoreController::OnTimeEvent_SensorData_1Min()
             std::string time = GetSystemDateAndTime();
             time = RemoveNonNumeric(time);
 
-            CheckMissingData();
+            std::string filter = "001";
+            std::string startTime = time.substr(0, time.size() - 2) + "00";
+            std::string endTime = time.substr(0, time.size() - 2) + "59";
+
+            CheckMissingData(startTime, endTime, filter);
+
             mCheck1MinFinish = true;
         }
     }
@@ -640,12 +676,12 @@ void CoreController::OnTimeEvent_SensorData_1Min()
 void CoreController::OnTimeEvent_SensorData_1Hour()
 {
     // Get current time
-    std::string CurrentTime = RemoveNonNumeric(GetSystemDateAndTime());
+    std::string currentTime = RemoveNonNumeric(GetSystemDateAndTime());
 
     // Check if second is zero
-    std::string second = CurrentTime.substr(CurrentTime.size() - 2, 2);
-    std::string minute = CurrentTime.substr(CurrentTime.size() - 4, 2);
-    std::string hour = CurrentTime.substr(CurrentTime.size() - 6, 2);
+    std::string second = currentTime.substr(currentTime.size() - 2, 2);
+    std::string minute = currentTime.substr(currentTime.size() - 4, 2);
+    std::string hour = currentTime.substr(currentTime.size() - 6, 2);
 
     if(!m1HourFinish)
     {
@@ -655,8 +691,10 @@ void CoreController::OnTimeEvent_SensorData_1Hour()
             auto endTime = currentTime.substr(0, currentTime.size() - 4) + "5959";
             std::string climateData = GenerateClimateMessage(startTime, endTime);
             mUartUserCommand->SendData(climateData);
+
+            // Store 1 hour data into database
+            InsertData(currentTime, climateData, "160");
             
-            Storage
             m1HourFinish = true;
         }
     }
@@ -780,7 +818,7 @@ void CoreController::OnTimeEvent_Time_Calibration()
             // Get current time
             std::string currentDate = GetSystemDate();
             std::string currentTime = GetSystemTime();
-
+            std::cout << "Send time calibration command" << std::endl;
             for(auto sensor : mSensors)
             {
                 std::string command = SENSOR_COMMAND_HEADER_GENERAL + sensor.first + "," + currentDate + "," + currentTime;
@@ -798,29 +836,23 @@ void CoreController::OnTimeEvent_Time_Calibration()
     }
 }
 
-// void CoreController::HandleDayData()
-// {
-//     // Read day data from database
-//     // Get current time
-//     std::string currentDate = GetSystemDate();
-//     std::string startTime = currentDate
-//     std::vector<std::string> history = mStorageUnit->GetClimateDataBetweenTime("005");
-
-// }
-// void CoreController::StoreDayDataToFile(string data, string fileName)
-// {
-//     std::ofstream outfile;
-//     outfile.open(fileName, std::ios_base::app);
-//     outfile << data << std::endl;
-//     outfile.close();
-// }
-
-
 void CoreController::CheckMissingData(std::string startTime, std::string endTime, std::string filter)
 {
     for(auto sensor : mSensors)
     {
-        sensor.second->CheckMissingData(startTime, endTime, filter);
+        std::vector<std::string> missData;
+
+        // Sensor level miss data check will ignore second.
+        startTime = startTime.substr(0, startTime.size() - 2);
+        endTime = endTime.substr(0, endTime.size() - 2);
+        missData = sensor.second->CheckMissingData(startTime, endTime, filter);
+        for(auto time : missData)
+        {
+            // Send command to sensor to ask for data
+            std::string startTime = time + "00"; 
+            std::string endTime = time + "59";
+            std::cout << "sensor: " << sensor.first <<" missing data: " << startTime << " - " << endTime << std::endl;
+        }
     }
 }
 
@@ -857,25 +889,6 @@ void CoreController::HandleSensorConnectionRequest(std::string sensorId, std::st
     // Check if requestMD5 equals to responseMD5
     if(requestMD5 == responseMD5)
     {
-        // Register sensor
-
-        Sensor* sensor = nullptr;
-        if(sensorId == "001")
-        {
-            sensor = new SensorAirPressure(sensorId, mStorageUnit);
-        }
-        else if(sensorId == "002")
-        {
-            sensor = new SensorTemperature(sensorId, mStorageUnit);
-        }
-        else 
-        {
-            std::cout << "This sensor is not supported" << std::endl;
-        }
-
-        RegisterSensor(sensorId, sensor);
-        std::cout << "register sensor: " << sensorId << std::endl;
-
         // Send response to sensor
         double time = DATA_SEND_START_TIME + ((TOTAL_TRANSMIT_TIME - DATA_SEND_START_TIME) * std::stoi(sensorId)) / MAX_SENSOR_NUMBER;
         std::string responseInfo = SENSOR_COMMAND_HEADER_GENERAL + sensorId + SENSOR_COMMAND_CONNECTION_INFO + "," + "ok" + "," + "00000001" + "," + std::to_string(time);
@@ -885,8 +898,7 @@ void CoreController::HandleSensorConnectionRequest(std::string sensorId, std::st
     {
         std::cout << "the request MD5 is not equal to the response MD5" << std::endl;
         std::cout << "response MD5: " << responseMD5 << std::endl;
-        mUartUserSensor->SendData("The request MD5 is not equal to response MD5");
-        // Send response to sensor
+        //mUartUserSensor->SendData("The request MD5 is not equal to response MD5");
     }
 }
 
@@ -1020,34 +1032,36 @@ std::string CoreController::CalculateMD5Sum(std::string originalData)
     return md5;
 }
 
-// std::string CoreController::GetTime()
-// {
-//     // Get time 1 day ago
-//     std::string time = "";
-//     std::string command = "date -d '1 day ago' +%Y%m%d";
-//     std::stringstream ss;
-//     std::string line;
-//     std::ifstream ifs(command.c_str());
-//     if(ifs.is_open())
-//     {
-//         while(getline(ifs, line))
-//         {
-//             ss << line;
-//         }
-//         ifs.close();
-//     }
-//     ss >> time;
-//     return time;
-// }
-
 bool CoreController::AutoCheck()
 {
     // Todo: check if sensor is valid
     return true;
 }
 
-void CoreController::RegisterSensor(std::string sensorId, Sensor* sensor)
+void CoreController::RegisterSensor(std::string sensorId)
 {
+    // Check if sensor is already registered
+    if(IfSensorExist(sensorId))
+    {
+        std::cout << "The sensor " << sensorId  << " is already registered" << std::endl;
+        return;
+    }
+
+    Sensor* sensor = nullptr;
+    if(sensorId == "001")
+    {
+        sensor = new SensorAirPressure(sensorId, mStorageUnit);
+    }
+    else if(sensorId == "002")
+    {
+        sensor = new SensorTemperature(sensorId, mStorageUnit);
+    }
+    else 
+    {
+        std::cout << "The sensor " << sensorId << " is not supported" << std::endl;
+    }
+
+    std::cout << "register sensor: " << sensorId << std::endl;
     mSensors[sensorId] = sensor;
 }
 

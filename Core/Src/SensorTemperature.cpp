@@ -8,7 +8,7 @@ SensorTemperature::SensorTemperature(std::string zoneNumber, std::string service
 {
     auto database = GetDataStorageUnit()->GetDatabase();
     // Create new table of database if not exist
-    std::string sql = "CREATE TABLE IF NOT EXISTS 002 (" \
+    std::string sql = "CREATE TABLE IF NOT EXISTS Sensor002 (" \
                       "TIME TEXT NOT NULL," \
                       "DATA TEXT NOT NULL," \
                       "AAA TEXT NOT NULL," \
@@ -24,7 +24,7 @@ SensorTemperature::SensorTemperature(std::string zoneNumber, std::string service
         sqlite3_close(database);
     }
     {
-        std::cout << "Table 002 created successfully" << std::endl;
+        std::cout << "Table Sensor002 created successfully" << std::endl;
     }
 }
 
@@ -33,7 +33,7 @@ SensorTemperature::SensorTemperature(std::string equipmentId, DataStorageUnit* d
 {
     auto database = GetDataStorageUnit()->GetDatabase();
     // Create new table of database if not exist
-    std::string sql = "CREATE TABLE IF NOT EXISTS 002 (" \
+    std::string sql = "CREATE TABLE IF NOT EXISTS Sensor002 (" \
                       "TIME TEXT NOT NULL," \
                       "DATA TEXT NOT NULL," \
                       "AAA TEXT NOT NULL," \
@@ -49,7 +49,7 @@ SensorTemperature::SensorTemperature(std::string equipmentId, DataStorageUnit* d
         sqlite3_close(database);
     }
     {
-        std::cout << "Table climate_data created successfully" << std::endl;
+        std::cout << "Table Sensor002 created successfully" << std::endl;
     }
 
 }
@@ -68,7 +68,7 @@ void SensorTemperature::StoreData(std::vector<std::string> data, std::string ori
     std::string dataAAAl5i = data[20];
     auto database = GetDataStorageUnit()->GetDatabase();
 
-    std::string sql = "INSERT INTO 002 (TIME, DATA, AAA, AAAI, AAA5i, AAAl5i, FILTER) VALUES ('" + time + "', '" + originalData + "', '" + dataAAA + "', '" + dataAAAI + "', '" + dataAAA5i + "', '" + dataAAAl5i + "', " + filter + ")";
+    std::string sql = "INSERT INTO Sensor002 (TIME, DATA, AAA, AAAI, AAA5i, AAAl5i, FILTER) VALUES ('" + time + "', '" + originalData + "', '" + dataAAA + "', '" + dataAAAI + "', '" + dataAAA5i + "', '" + dataAAAl5i + "', " + filter + ")";
     int rc = sqlite3_exec(database, sql.c_str(), NULL, NULL, NULL);
     if (rc != SQLITE_OK)
     {
@@ -79,7 +79,7 @@ void SensorTemperature::StoreData(std::vector<std::string> data, std::string ori
 
 std::vector<std::string> SensorTemperature::CalculateData(std::string startTime, std::string endTime)
 {
-    // Get data of current hour from database table 002
+    // Get data of current hour from database table Sensor002
     auto database = GetDataStorageUnit()->GetDatabase();
 
     std::string AAA;
@@ -90,7 +90,7 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     std::string AAAi;
 
     // Get latest AAA data between startTime and endTime
-    std::string sql = "SELECT * FROM 002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "' ORDER BY TIME DESC LIMIT 1";
+    std::string sql = "SELECT * FROM Sensor002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "' ORDER BY TIME DESC LIMIT 1";
     sqlite3_stmt* stmt;
     auto rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
     if (rc != SQLITE_OK)
@@ -104,7 +104,7 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     }
 
     // Get max AAA value
-    std::string sql = "SELECT MAX(AAA) FROM 002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "'";
+    sql = "SELECT MAX(AAA) FROM Sensor002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "'";
     rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
     if (rc != SQLITE_OK)
     {
@@ -121,7 +121,7 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     }
 
     // For max AAA value, get time
-    sql = "SELECT TIME FROM 002 WHERE AAA = '" + AAAa + "'";
+    sql = "SELECT TIME FROM Sensor002 WHERE AAA = '" + AAAa + "'";
     rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
     if (rc != SQLITE_OK)
     {
@@ -138,7 +138,7 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     }
 
     // Get min AAAc value
-    sql = "SELECT MIN(AAA) FROM 002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "'";
+    sql = "SELECT MIN(AAA) FROM Sensor002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "'";
     rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
     if (rc != SQLITE_OK)
     {
@@ -154,9 +154,8 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
         }
     }
 
-
     // For min AAAc value, get time
-    sql = "SELECT TIME FROM 002 WHERE AAA = '" + AAAc + "'";
+    sql = "SELECT TIME FROM Sensor002 WHERE AAA = '" + AAAc + "'";
     rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
     if (rc != SQLITE_OK)
     {
@@ -173,7 +172,7 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     }
 
     // Get average AAA value
-    sql = "SELECT AVG(AAA) FROM 002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "'";
+    sql = "SELECT AVG(AAA) FROM Sensor002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "'";
     rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
     if (rc != SQLITE_OK)
     {
@@ -234,10 +233,10 @@ std::vector<std::string> SensorTemperature::GetStatusInfo(std::string startTime,
 
 std::vector<std::string> SensorTemperature::CheckMissingData(std::string startTime, std::string endTime, std::string filter)
 {
-    std::cout << "Start to check missing data for sensor 002" << std::endl;
+    std::cout << "Start to check missing data for sensor Sensor002" << std::endl;
     auto database = GetDataStorageUnit()->GetDatabase();
     // Get data from database between startTime and endTime and FILTER equal to filter
-    std::string sql = "SELECT * FROM 002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "' AND FILTER = '" + filter + "'";
+    std::string sql = "SELECT * FROM Sensor002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "' AND FILTER = '" + filter + "'";
     sqlite3_stmt* stmt;
     auto rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
     if (rc != SQLITE_OK)
@@ -255,7 +254,6 @@ std::vector<std::string> SensorTemperature::CheckMissingData(std::string startTi
     }
 
     // Check if data is missing
-    std::vector<std::string> missData;
     int min = std::stoi(startTime);
     int max = std::stoi(endTime);
     std::vector<std::string> missData;
@@ -274,4 +272,30 @@ std::vector<std::string> SensorTemperature::CheckMissingData(std::string startTi
 void SensorTemperature::Command_ReadData()
 {
     std::string command = "";
+}
+
+
+std::vector<std::string> SensorTemperature::GetSensorData(std::string startTime, std::string endTime, std::string filter)
+{
+    std::vector<std::string> historyData;
+    auto database = GetDataStorageUnit()->GetDatabase();
+
+    // Get data from database between startTime and endTime and FILTER equal to filter
+    std::string sql = "SELECT * FROM Sensor002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "' AND FILTER = '" + filter + "'";
+    sqlite3_stmt* stmt;
+    auto rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        std::cout << "SQL error: " << sqlite3_errmsg(database) << std::endl;
+        sqlite3_close(database);
+    }
+
+    // iterate over the columns to get the data
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        std::string temp = std::string((const char*)sqlite3_column_text(stmt, 0));
+        historyData.push_back(temp);
+    }
+
+    return historyData;
 }

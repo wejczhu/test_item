@@ -74,7 +74,7 @@ void CommandDataHandler::ParseData(std::vector<std::string> data, std::string or
     }
     else if(command.compare(std::string(COMMAND_READ_DATA)) == 0)
     {
-        mController->HandleLastestData(data);
+        mController->HandleLatestData(data);
     }
     else if(command.compare(std::string(COMMAND_SET_COM_WAY)) == 0)
     {
