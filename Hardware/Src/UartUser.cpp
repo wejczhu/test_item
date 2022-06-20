@@ -54,6 +54,7 @@ void UartUser::Run()
     while (mIsRunning)
     {
         mSerialPort->Read(readBuffer);
+        readBuffer.erase(readBuffer.find_last_not_of(" \n\r\t")+1);
         //std::cout << readBuffer << std::endl;
         vector<string> data = mDataHandler->SplitDataFrame(readBuffer);
         mDataHandler->ParseData(data, readBuffer);

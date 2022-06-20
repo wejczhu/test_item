@@ -879,8 +879,8 @@ void CoreController::HandleSensorConnectionRequest(std::string sensorId, std::st
 {
     // Get serial number by sensor id
 
-    auto config = mStorageUnit->ReadJsonFile(sensorId);
-    std::string serialNumber = config["serial_number"].asString();
+    auto config = mStorageUnit->ReadJsonFile("core_controller");
+    std::string serialNumber = config["sensors"][sensorId]["serial_number"].asString();
     int ascii = ConvertToASCII(sensorId) + ConvertToASCII(connectionTime) + ConvertToASCII(serialNumber);
     // get last 16 bit of string
     std::string tempMD5 = CalculateMD5Sum(std::to_string(ascii));
@@ -1024,6 +1024,7 @@ bool CoreController::IsSensorValid(std::string registerInfo)
 
 std::string CoreController::CalculateMD5Sum(std::string originalData)
 {
+
     std::string command = "echo -n " + originalData + " | md5sum > /tmp/md5.txt";
     std::string md5 = "";
     system(command.c_str());

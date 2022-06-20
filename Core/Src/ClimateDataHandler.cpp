@@ -26,6 +26,9 @@ void ClimateDataHandler::HandleClimateData(std::vector<std::string> data, std::s
 
 void ClimateDataHandler::HandleSensorCommand(std::vector<std::string> data, std::string originalData)
 {
+
+    std::cout << "handle sensor command" << std::endl;
+    std::cout << "command: " << originalData << std::endl;
     auto firstSymbol = data.front().substr(0, 1);
 
     if(firstSymbol == SENSOR_COMMAND_HEADER_RESPONSE)
@@ -53,19 +56,14 @@ void ClimateDataHandler::HandleSensorCommand(std::vector<std::string> data, std:
                 }
 
             }
-
-            std::string time = data[1];
-            std::string md5 = data[3];
-            mController->HandleSensorConnectionRequest(sensorId, time, md5);
+            else
+            {
+                std::string time = data[1];
+                std::string md5 = data[3];
+                mController->HandleSensorConnectionRequest(sensorId, time, md5);
+            }
         }
-
-        
     }
-
-
-
-
-
 
     // if(command == SENSOR_COMMAND_CONNECTION_INFO)
     // {
@@ -91,7 +89,7 @@ void ClimateDataHandler::HandleSensorCommand(std::vector<std::string> data, std:
 void ClimateDataHandler::ParseData(std::vector<std::string> data, std::string originalData)
 {
     // Check if data is sensor command
-    if (data.front() == "BG" && data.back() == "ED\r\n")
+    if (data.front() == "BG" && data.back() == "ED")
     {
         HandleClimateData(data, originalData);
     }
