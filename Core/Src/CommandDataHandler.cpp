@@ -10,13 +10,14 @@ CommandDataHandler::CommandDataHandler(CoreController* controller)
 
 void CommandDataHandler::ParseData(std::vector<std::string> data, std::string originalData)
 {
+    std::cout << "receive data: " << originalData << std::endl;
     string command = data[0];
 
     //Get last 2 char of command
-    string last2char = command.substr(command.length() - 2, 2);
+    //string last2char = command.substr(command.length() - 2, 2);
 
     // compare command with command
-    if(last2char.compare(std::string()) == 0)
+    if(command.compare(std::string(COMMAND_SET_COM_PARAMETER)) == 0)
     {
         mController->HandleSetCom(data);
     }

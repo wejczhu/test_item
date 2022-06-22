@@ -8,7 +8,7 @@ class Timer
 {
 public:
     // Create a timer with a given time and callback function
-    Timer(int minutes, std::function<void()> callback);
+    Timer(int seconds, std::function<void()> callback);
     ~Timer();
 
     void Terminate();

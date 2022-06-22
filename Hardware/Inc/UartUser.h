@@ -29,14 +29,14 @@ public:
         int mStoreFd_1_hour;
     };
 
-    UartUser(DataHandler* dataHandler);
+    UartUser(DataHandler* dataHandler, std::string portDevice);
     ~UartUser();
 
     void Run();
 
     void Terminate();
 
-    void Initialize();
+    void Initialize(std::string portDevice);
 
     void StoreData(std::string& data);
 

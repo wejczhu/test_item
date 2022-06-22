@@ -31,23 +31,23 @@ CoreController::CoreController()
     mStorageUnit = new DataStorageUnit();
 
     mClimateDataHandler = new ClimateDataHandler(this);
-    //mCommandDataHandler = new CommandDataHandler(this);
+    mCommandDataHandler = new CommandDataHandler(this);
 
-    mUartUserSensor = new UartUser(mClimateDataHandler);
-    //mUartUserCommand = new UartUser(mCommandDataHandler);
+    mUartUserSensor = new UartUser(mClimateDataHandler, "/dev/ttymxc2");
+    mUartUserCommand = new UartUser(mCommandDataHandler, "/dev/ttymxc3");
 
     mTimer1Minute = new Timer(1, std::bind(&CoreController::OnTimeEvent_SensorData_1Min, this));
-    //mTimerStorage = new Timer(1, std::bind(&CoreController::OnTimeEvent_StorageData, this));
+    mTimerStorage = new Timer(1, std::bind(&CoreController::OnTimeEvent_StorageData, this));
     //CreateDatabaseTable();
 }
 
 CoreController::~CoreController()
 {
     delete mStorageUnit;
-    //delete mUartUserSensor;
+    delete mUartUserSensor;
     delete mUartUserCommand;
     delete mClimateDataHandler;
-    //delete mCommandDataHandler;
+    delete mCommandDataHandler;
 
     mStorageUnit = nullptr;
     mUartUserSensor = nullptr;
@@ -330,7 +330,7 @@ void CoreController::HandleEquipmentZoneNumber(std::vector<std::string> command)
     if(command.size() == 1)
     {
         auto value = mStorageUnit->ReadJsonFile("controller_config");
-        std::string zoneNumber = value["equipment_zone_number"].asString();
+        std::string zoneNumber = value["controller_config"]["equipment_zone_number"].asString();
         mUartUserCommand->SendData(zoneNumber);
     }
     else
@@ -352,7 +352,7 @@ void CoreController::HandleServiceType(std::vector<std::string> command)
     if(command.size() == 1)
     {
         auto value = mStorageUnit->ReadJsonFile("controller_config");
-        std::string serviceType = value["service_type"].asString();
+        std::string serviceType = value["controller_config"]["service_type"].asString();
         mUartUserCommand->SendData(serviceType);
     }
     else
@@ -374,7 +374,7 @@ void CoreController::HandleEquipmentBit(std::vector<std::string> command)
     if(command.size() == 1)
     {
         auto value = mStorageUnit->ReadJsonFile("controller_config");
-        std::string bitrate = value["equipment_bit"].asString();
+        std::string bitrate = value["controller_config"]["equipment_bit"].asString();
         mUartUserCommand->SendData(bitrate);
     }
     else
@@ -396,7 +396,7 @@ void CoreController::HandleEquipmentId(std::vector<std::string> command)
     if(command.size() == 1)
     {
         auto value = mStorageUnit->ReadJsonFile("controller_config");
-        std::string equipmentId = value["equipment_id"].asString();
+        std::string equipmentId = value["controller_config"]["equipment_id"].asString();
         mUartUserCommand->SendData(equipmentId);
     }
     else
@@ -418,7 +418,7 @@ void CoreController::HandleLatitude(std::vector<std::string> command)
     if(command.size() == 1)
     {
         auto value = mStorageUnit->ReadJsonFile("controller_config");
-        std::string latitude = value["latitude"].asString();
+        std::string latitude = value["controller_config"]["latitude"].asString();
         mUartUserCommand->SendData(latitude);
     }
     else
@@ -440,7 +440,7 @@ void CoreController::HandleLongitude(std::vector<std::string> command)
     if(command.size() == 1)
     {
         auto value = mStorageUnit->ReadJsonFile("controller_config");
-        std::string longitude = value["longitude"].asString();
+        std::string longitude = value["controller_config"]["longitude"].asString();
         mUartUserCommand->SendData(longitude);
     }
     else
@@ -635,6 +635,7 @@ void CoreController::OnTimeEvent_SensorData_1Min()
     {
         if(second == "05" || second == "06")
         {
+            std::cout << "start to collect data for 1 min" << std::endl;
             CollectData_1_Min();
             m1MinuteFinish = true;
         }
@@ -710,19 +711,20 @@ void CoreController::OnTimeEvent_SensorData_1Hour()
 void CoreController::OnTimeEvent_StorageData()
 {
     // Get current time
-    std::cout << "On time event: store data to SD card" << std::endl;
     std::string CurrentTime = GetSystemTime();
     // Check if second is zero
     
     std::string second = CurrentTime.substr(CurrentTime.size() - 2, 2);
-    std::string minute = CurrentTime.substr(CurrentTime.size() - 4, 2);
-    std::string hour = CurrentTime.substr(CurrentTime.size() - 6, 2);
+    std::string minute = CurrentTime.substr(CurrentTime.size() - 5, 2);
+    std::string hour = CurrentTime.substr(CurrentTime.size() - 8, 2);
 
+    //std::cout << CurrentTime << std::endl;
     if(!mStorageFinish)
     {
         if(hour == "20" && minute == "00" && ( second == "00" || second == "01" || second == "02"))
         {
             // Store data to txt file
+            std::cout << "start to store data " << std::endl;
             std::string currentTime = RemoveNonNumeric(GetSystemDate());
             std::string today = RemoveNonNumeric(GetSystemDate());
 
@@ -845,6 +847,8 @@ void CoreController::CheckMissingData(std::string startTime, std::string endTime
         // Sensor level miss data check will ignore second.
         startTime = startTime.substr(0, startTime.size() - 2);
         endTime = endTime.substr(0, endTime.size() - 2);
+        std::cout << "currenttime: " << GetSystemTime() << std::endl;
+
         missData = sensor.second->CheckMissingData(startTime, endTime, filter);
         for(auto time : missData)
         {

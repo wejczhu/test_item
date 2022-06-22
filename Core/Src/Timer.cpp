@@ -1,8 +1,8 @@
 #include "Timer.h"
 #include <iostream>
 
-Timer::Timer(int minutes, std::function<void()> callback)
-: mTimeInterval(minutes)
+Timer::Timer(int seconds, std::function<void()> callback)
+: mTimeInterval(seconds)
 , mCallback(callback)
 {
     mThread = new std::thread(&Timer::Run, this);
@@ -21,7 +21,7 @@ void Timer::Run()
 {
     while(mIsRunning)
     {
-        std::this_thread::sleep_for(std::chrono::minutes(mTimeInterval));
+        std::this_thread::sleep_for(std::chrono::seconds(mTimeInterval));
         if(mIsRunning)
         {
             mIsTimeout = true;

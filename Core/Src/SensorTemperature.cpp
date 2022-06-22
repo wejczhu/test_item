@@ -234,6 +234,8 @@ std::vector<std::string> SensorTemperature::GetStatusInfo(std::string startTime,
 std::vector<std::string> SensorTemperature::CheckMissingData(std::string startTime, std::string endTime, std::string filter)
 {
     std::cout << "Start to check missing data for sensor Sensor002" << std::endl;
+    std::cout << "start time: " << startTime << std::endl;
+    std::cout << "end time: " << endTime << std::endl;
     auto database = GetDataStorageUnit()->GetDatabase();
     // Get data from database between startTime and endTime and FILTER equal to filter
     std::string sql = "SELECT * FROM Sensor002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "' AND FILTER = '" + filter + "'";
@@ -253,6 +255,11 @@ std::vector<std::string> SensorTemperature::CheckMissingData(std::string startTi
         data.push_back(std::string(reinterpret_cast<const char*>(temp)));
     }
 
+    std::cout << "here" << std::endl;
+    for(auto i : data)
+    {
+        std::cout << i << std::endl;
+    }
     // Check if data is missing
     int min = std::stoi(startTime);
     int max = std::stoi(endTime);

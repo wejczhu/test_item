@@ -13,11 +13,11 @@
 using namespace LinuxSerial;
 using namespace std;
 
-void UartUser::Initialize()
+void UartUser::Initialize(std::string portDevice)
 {
     // Initialize uart
     mSerialPort = new SerialPort();
-    mSerialPort->SetDevice("/dev/ttymxc2");
+    mSerialPort->SetDevice(portDevice);
     mSerialPort->SetTimeout(-1);
     mSerialPort->Open();
 
@@ -26,13 +26,13 @@ void UartUser::Initialize()
     mIsRunning = true;
 }
 
-UartUser::UartUser(DataHandler* dataHandler)
+UartUser::UartUser(DataHandler* dataHandler, std::string portDevice)
 : mSerialPort(nullptr)
 , mThread(nullptr)
 , mFd()
 , mDataHandler(dataHandler)
 {
-    Initialize();
+    Initialize(portDevice);
 }
 
 UartUser::~UartUser()
