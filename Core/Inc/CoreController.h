@@ -70,7 +70,8 @@
 
 
 
-#define SD_CARD_MOUNT_DIR "/run/media/mmcblk0p1"
+//#define SD_CARD_MOUNT_DIR "/run/media/mmcblk0"
+#define SD_CARD_MOUNT_DIR "/tmp"
 
 
 class UartUser;

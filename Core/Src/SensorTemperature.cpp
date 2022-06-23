@@ -234,8 +234,6 @@ std::vector<std::string> SensorTemperature::GetStatusInfo(std::string startTime,
 std::vector<std::string> SensorTemperature::CheckMissingData(std::string startTime, std::string endTime, std::string filter)
 {
     std::cout << "Start to check missing data for sensor Sensor002" << std::endl;
-    std::cout << "start time: " << startTime << std::endl;
-    std::cout << "end time: " << endTime << std::endl;
     auto database = GetDataStorageUnit()->GetDatabase();
     // Get data from database between startTime and endTime and FILTER equal to filter
     std::string sql = "SELECT * FROM Sensor002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "' AND FILTER = '" + filter + "'";
@@ -255,22 +253,24 @@ std::vector<std::string> SensorTemperature::CheckMissingData(std::string startTi
         data.push_back(std::string(reinterpret_cast<const char*>(temp)));
     }
 
-    std::cout << "here" << std::endl;
-    for(auto i : data)
-    {
-        std::cout << i << std::endl;
-    }
     // Check if data is missing
-    int min = std::stoi(startTime);
-    int max = std::stoi(endTime);
+    auto min = std::stoll(startTime);
+    auto max = std::stoll(endTime);
     std::vector<std::string> missData;
-    for(int i = min; i < max; i++)
+
+    for(auto i = min; i <= max; i++)
     {
         // check if i is in data
+        std::cout << "checking: " << i << std::endl;
         if (std::find(data.begin(), data.end(), std::to_string(i)) == data.end())
         {
             missData.push_back(std::to_string(i));
         }
+    }
+
+    for(auto i : missData)
+    {
+        std::cout << "missdata: " << i << std::endl;
     }
 
     return missData;
@@ -300,7 +300,7 @@ std::vector<std::string> SensorTemperature::GetSensorData(std::string startTime,
     // iterate over the columns to get the data
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-        std::string temp = std::string((const char*)sqlite3_column_text(stmt, 0));
+        std::string temp = std::string((const char*)sqlite3_column_text(stmt, 1));
         historyData.push_back(temp);
     }
 

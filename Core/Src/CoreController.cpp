@@ -734,11 +734,11 @@ void CoreController::OnTimeEvent_StorageData()
             for(auto sensor : mSensors)
             {
                 std::string sensorId = sensor.first;
-                std::vector<std::string> history_1_min = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, sensorId, "001");
-                std::vector<std::string> history_5_min = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, sensorId, "005");
-                std::vector<std::string> history_1_hour = mStorageUnit->GetClimateDataBetweenTime(startTime, endTime, sensorId, "160");
+                std::vector<std::string> history_1_min = sensor.second->GetSensorData(startTime, endTime, "001");
+                std::vector<std::string> history_5_min = sensor.second->GetSensorData(startTime, endTime, "005");
+                std::vector<std::string> history_1_hour = sensor.second->GetSensorData(startTime, endTime, "160");
 
-                std::string label = mStorageUnit->ReadJsonFile(sensorId)["label"].asString();
+                std::string label = mStorageUnit->ReadJsonFile(sensorId)["sensors"][sensorId]["label"].asString();
                 std::string directory_1_min = std::string(SD_CARD_MOUNT_DIR) + "/DATA/" + label + "/QC" + "/Minute/";
                 std::string directory_5_min = std::string(SD_CARD_MOUNT_DIR) + "/DATA/" + label + "/QC" + "/5Minute/";
                 std::string directory_1_hour = std::string(SD_CARD_MOUNT_DIR) + "/DATA/" + label + "/DE" + "/Hour/";
@@ -750,6 +750,7 @@ void CoreController::OnTimeEvent_StorageData()
                 std::string command_create_directory_1_min = "mkdir -p " + directory_1_min;
                 std::string command_create_directory_5_min = "mkdir -p " + directory_5_min;
                 std::string command_create_directory_1_hour = "mkdir -p " + directory_1_hour;
+
                 system(command_create_directory_1_min.c_str());
                 system(command_create_directory_5_min.c_str());
                 system(command_create_directory_1_hour.c_str());
@@ -774,22 +775,28 @@ void CoreController::OnTimeEvent_StorageData()
 
                 for(auto data : history_1_min)
                 {
+                    data = data + "\n";
                     write(fd_1_min, data.c_str(), data.size());
                 }
 
                 for(auto data : history_5_min)
                 {
+                    data = data + "\n";
                     write(fd_5_min, data.c_str(), data.size());
                 }
 
                 for(auto data : history_1_hour)
                 {
+                    data = data + "\n";
                     write(fd_1_hour, data.c_str(), data.size());
                 }
 
                 close(fd_1_min);
                 close(fd_5_min);
                 close(fd_1_hour);
+
+                mStorageFinish = true;
+                std::cout << "Finish to store daily data!" << std::endl;
             }
         }
     }
@@ -814,7 +821,6 @@ void CoreController::OnTimeEvent_Time_Calibration()
 
     if(!mTimeCalibrationFinish)
     {
-
         if(minute == "16" && (second == "21" || second == "22"))
         {
             // Get current time
@@ -847,7 +853,6 @@ void CoreController::CheckMissingData(std::string startTime, std::string endTime
         // Sensor level miss data check will ignore second.
         startTime = startTime.substr(0, startTime.size() - 2);
         endTime = endTime.substr(0, endTime.size() - 2);
-        std::cout << "currenttime: " << GetSystemTime() << std::endl;
 
         missData = sensor.second->CheckMissingData(startTime, endTime, filter);
         for(auto time : missData)
@@ -857,6 +862,9 @@ void CoreController::CheckMissingData(std::string startTime, std::string endTime
             std::string endTime = time + "59";
             std::cout << "sensor: " << sensor.first <<" missing data: " << startTime << " - " << endTime << std::endl;
         }
+
+        // Send command to ask sensor to send the missing data
+        //std::string command = 
     }
 }
 
