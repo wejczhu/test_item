@@ -38,6 +38,7 @@ CoreController::CoreController()
 
     mTimer1Minute = new Timer(1, std::bind(&CoreController::OnTimeEvent_SensorData_1Min, this));
     mTimerStorage = new Timer(1, std::bind(&CoreController::OnTimeEvent_StorageData, this));
+    mTimer1Hour = new Timer(1, std::bind(&CoreController::OnTimeEvent_SensorData_1Hour,this));
     //CreateDatabaseTable();
 }
 
@@ -49,11 +50,19 @@ CoreController::~CoreController()
     delete mClimateDataHandler;
     delete mCommandDataHandler;
 
+    delete mTimer1Minute;
+    delete mTimerStorage;
+    delete mTimer1Hour;
+
     mStorageUnit = nullptr;
     mUartUserSensor = nullptr;
     mUartUserCommand = nullptr;
     mClimateDataHandler = nullptr;
     mCommandDataHandler = nullptr;
+
+    mTimer1Minute = nullptr;
+    mTimerStorage = nullptr;
+    mTimer1Hour = nullptr;
 }
 
 void CoreController::CreateDatabaseTable()
@@ -686,10 +695,13 @@ void CoreController::OnTimeEvent_SensorData_1Hour()
 
     if(!m1HourFinish)
     {
-        if(minute == "59" && (second == "21" || second == "22" || second == "23"))
+        if(minute == "00" && (second == "05" || second == "06" || second == "07"))
         {
+            std::cout << "Start to calculate 1 hour data" << std::endl;
             auto startTime = currentTime.substr(0, currentTime.size() - 4) + "0000";
             auto endTime = currentTime.substr(0, currentTime.size() - 4) + "5959";
+            std::cout << "start time: " << startTime << std::endl;
+            std::cout << "end time : " << endTime << std::endl;
             std::string climateData = GenerateClimateMessage(startTime, endTime);
             mUartUserCommand->SendData(climateData);
 
@@ -922,10 +934,12 @@ std::string CoreController::GenerateClimateMessage(std::string startTime, std::s
     std::string End = "ED";
     climateData.push_back(Begin);
     // Merge climateData and header
+    std::cout << "1111111111111" << std::endl;
     auto header = GenerateClimateMessageHeader();
     climateData.insert(climateData.end(), header.begin(), header.end());
-
+    std::cout << "222222222222" << std::endl;
     auto main = GenerateClimateMessageMain(startTime, endTime);
+    std::cout << "33333333333333" << std::endl;
     climateData.insert(climateData.end(), main.begin(), main.end());
 
     // Calculate CRC
@@ -994,7 +1008,9 @@ std::vector<std::string> CoreController::GenerateClimateMessageHeader()
 std::vector<std::string> CoreController::GenerateClimateMessageMain(std::string startTime, std::string endTime)
 {
     std::vector<std::string> messageMain;
+    std::cout << "444444444444444" << std::endl;
     std::vector<std::string> messageMain_Measurement = GenerateClimateMessage_Measurement(startTime, endTime);
+    std::cout << "444444444444" << std::endl;
     std::vector<std::string> messageMain_StatusInfo = GenerateClimateMessage_StatusInfo(startTime, endTime);
     messageMain.insert(messageMain.end(), messageMain_Measurement.begin(), messageMain_Measurement.end());
 
@@ -1008,7 +1024,9 @@ std::vector<std::string> CoreController::GenerateClimateMessage_Measurement(std:
 
     for(auto sensor : mSensors)
     {
+        std::cout << "5555555555555555" << std::endl;
         auto data = sensor.second->CalculateData(startTime, endTime);
+        std::cout << "finishi to calculte data " << std::endl;
         mainData.insert(mainData.end(), data.begin(), data.end());
         qualityControl += sensor.second->GetQualityControlBit();
     }
