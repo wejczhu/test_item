@@ -88,7 +88,7 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     std::string AAAc;
     std::string AAAd;
     std::string AAAi;
-    std::cout << "start to calculate 002 data" << std::endl;
+
     // Get latest AAA data between startTime and endTime
     std::string sql = "SELECT * FROM Sensor002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "' ORDER BY TIME DESC LIMIT 1";
     sqlite3_stmt* stmt;
@@ -100,7 +100,14 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     }
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-        AAA = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+        if (sqlite3_column_text(stmt, 2) == NULL)
+        {
+            AAA = "///";
+        }
+        else
+        {
+            AAA = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+        }
     }
 
     // Get max AAA value
@@ -113,13 +120,12 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     }
     else
     {
-        std::cout << "ghgjhg" << std::endl;
         while (sqlite3_step(stmt) == SQLITE_ROW)
         {
             if (sqlite3_column_text(stmt, 2) == NULL)
             {
                 //std::string
-                std::cout << "this is null " << std::endl;
+                AAAa = "///";
             }
             else
             {
@@ -127,7 +133,7 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
             }
         }
     }
-    std::cout << "3333333333333333333" << std::endl;
+
     // For max AAA value, get time
     sql = "SELECT TIME FROM Sensor002 WHERE AAA = '" + AAAa + "'";
     rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
@@ -140,11 +146,18 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     {
         while (sqlite3_step(stmt) == SQLITE_ROW)
         {
-            AAAb = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-            std::cout << "Max time: " << AAAb << std::endl;
+            if (sqlite3_column_text(stmt, 0) == NULL)
+            {
+                //std::string
+                AAAb = "///";
+            }
+            else
+            {
+                AAAb = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+            }
         }
     }
-    std::cout << "4444444444444444" << std::endl;
+
     // Get min AAAc value
     sql = "SELECT MIN(AAA) FROM Sensor002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "'";
     rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
@@ -157,11 +170,18 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     {
         while (sqlite3_step(stmt) == SQLITE_ROW)
         {
-            AAAc = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-            std::cout << "Min AAAc: " << AAAc << std::endl;
+            if (sqlite3_column_text(stmt, 0) == NULL)
+            {
+                //std::string
+                AAAc = "///";
+            }
+            else 
+            {
+                AAAc = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+            }
         }
     }
-    std::cout << "5555555555555555" << std::endl;
+
     // For min AAAc value, get time
     sql = "SELECT TIME FROM Sensor002 WHERE AAA = '" + AAAc + "'";
     rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
@@ -174,11 +194,18 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     {
         while (sqlite3_step(stmt) == SQLITE_ROW)
         {
-            AAAd = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-            std::cout << "Min time: " << AAAd << std::endl;
+            if (sqlite3_column_text(stmt, 0) == NULL)
+            {
+                //std::string
+                AAAd = "///";
+            }
+            else
+            {
+                AAAd = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+            }
         }
     }
-    std::cout << "666666666666666666666" << std::endl;
+
     // Get average AAA value
     sql = "SELECT AVG(AAA) FROM Sensor002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "'";
     rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
@@ -191,8 +218,15 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     {
         while (sqlite3_step(stmt) == SQLITE_ROW)
         {
-            AAAi = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-            std::cout << "Average AAA: " << AAAi << std::endl;
+            if (sqlite3_column_text(stmt, 0) == NULL)
+            {
+                //std::string
+                AAAi = "///";
+            }
+            else
+            {
+                AAAi = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+            }
         }
     }
 
@@ -211,12 +245,14 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     outputData.push_back("AAAi");
     outputData.push_back(AAAi);
 
+    std::cout << "Finish to calculate 1 hour data for sensor 002" << std::endl;
+
     return outputData;
 }
 
 std::string SensorTemperature::GetQualityControlBit()
 {
-    return "0000";
+    return "000000";
 }
 
 uint8_t SensorTemperature::GetNumberOfMeasureElement()
@@ -313,4 +349,39 @@ std::vector<std::string> SensorTemperature::GetSensorData(std::string startTime,
     }
 
     return historyData;
+}
+
+std::vector<std::string> SensorTemperature::CalculateData_5Min(std::string startTime, std::string endTime)
+{
+    auto database = GetDataStorageUnit()->GetDatabase();
+
+    std::string AAA5i;
+
+    // Get latest AAA5i data from database
+    std::string sql = "SELECT * FROM Sensor002 WHERE TIME BETWEEN '" + startTime + "' AND '" + endTime + "' ORDER BY TIME DESC LIMIT 1";
+    sqlite3_stmt* stmt;
+    auto rc = sqlite3_prepare_v2(database, sql.c_str(), -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        std::cout << "SQL error: " << sqlite3_errmsg(database) << std::endl;
+        sqlite3_close(database);
+    }
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        if (sqlite3_column_text(stmt, 4) == NULL)
+        {
+            AAA5i = "///";
+        }
+        else
+        {
+            AAA5i = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
+        }
+    }
+
+    std::vector<std::string> outputData;
+
+    outputData.push_back("AAA5i");
+    outputData.push_back(AAA5i);
+
+    return outputData;
 }

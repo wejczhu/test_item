@@ -286,3 +286,8 @@ std::vector<std::string> SensorAirPressure::GetSensorData(std::string startTime,
 
     return historyData;
 }
+
+std::vector<std::string> SensorAirPressure::CalculateData_5Min(std::string startTime, std::string endTime)
+{
+    
+}

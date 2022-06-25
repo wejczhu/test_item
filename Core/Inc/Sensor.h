@@ -44,6 +44,8 @@ public:
 
     virtual std::vector<std::string> GetSensorData(std::string startTime, std::string endTime, std::string filter) = 0;
 
+    virtual std::vector<std::string> CalculateData_5Min(std::string startTime, std::string endTime) = 0;
+
 private:
     bool mIsActive;
     bool mAutoSend;

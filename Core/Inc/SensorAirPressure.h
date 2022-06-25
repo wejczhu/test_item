@@ -20,6 +20,8 @@ public:
     uint8_t GetNumberOfEquipmentStatus() override;
     std::vector<std::string> GetSensorData(std::string startTime, std::string endTime, std::string filter) override;
 
+    std::vector<std::string> CalculateData_5Min(std::string startTime, std::string endTime) override;
+
     // command 
     void Command_ReadData() override;
 private:

@@ -700,8 +700,6 @@ void CoreController::OnTimeEvent_SensorData_1Hour()
             std::cout << "Start to calculate 1 hour data" << std::endl;
             auto startTime = currentTime.substr(0, currentTime.size() - 4) + "0000";
             auto endTime = currentTime.substr(0, currentTime.size() - 4) + "5959";
-            std::cout << "start time: " << startTime << std::endl;
-            std::cout << "end time : " << endTime << std::endl;
             std::string climateData = GenerateClimateMessage(startTime, endTime);
             mUartUserCommand->SendData(climateData);
 
@@ -730,7 +728,6 @@ void CoreController::OnTimeEvent_StorageData()
     std::string minute = CurrentTime.substr(CurrentTime.size() - 5, 2);
     std::string hour = CurrentTime.substr(CurrentTime.size() - 8, 2);
 
-    //std::cout << CurrentTime << std::endl;
     if(!mStorageFinish)
     {
         if(hour == "20" && minute == "00" && ( second == "00" || second == "01" || second == "02"))
@@ -928,18 +925,15 @@ void CoreController::HandleSensorConnectionRequest(std::string sensorId, std::st
 
 std::string CoreController::GenerateClimateMessage(std::string startTime, std::string endTime)
 {
-
     std::vector<std::string> climateData;
     std::string Begin = "BG";
     std::string End = "ED";
     climateData.push_back(Begin);
     // Merge climateData and header
-    std::cout << "1111111111111" << std::endl;
     auto header = GenerateClimateMessageHeader();
     climateData.insert(climateData.end(), header.begin(), header.end());
-    std::cout << "222222222222" << std::endl;
     auto main = GenerateClimateMessageMain(startTime, endTime);
-    std::cout << "33333333333333" << std::endl;
+    std::cout << "start to insert data " << std::endl;
     climateData.insert(climateData.end(), main.begin(), main.end());
 
     // Calculate CRC
@@ -1008,12 +1002,15 @@ std::vector<std::string> CoreController::GenerateClimateMessageHeader()
 std::vector<std::string> CoreController::GenerateClimateMessageMain(std::string startTime, std::string endTime)
 {
     std::vector<std::string> messageMain;
-    std::cout << "444444444444444" << std::endl;
     std::vector<std::string> messageMain_Measurement = GenerateClimateMessage_Measurement(startTime, endTime);
-    std::cout << "444444444444" << std::endl;
     std::vector<std::string> messageMain_StatusInfo = GenerateClimateMessage_StatusInfo(startTime, endTime);
     messageMain.insert(messageMain.end(), messageMain_Measurement.begin(), messageMain_Measurement.end());
+    std::cout << "finish to generate climate message main " << std::endl;
 
+    for(auto i : messageMain)
+    {
+        std::cout << i << std::endl;
+    }
     return messageMain;
 }
 
@@ -1024,9 +1021,7 @@ std::vector<std::string> CoreController::GenerateClimateMessage_Measurement(std:
 
     for(auto sensor : mSensors)
     {
-        std::cout << "5555555555555555" << std::endl;
         auto data = sensor.second->CalculateData(startTime, endTime);
-        std::cout << "finishi to calculte data " << std::endl;
         mainData.insert(mainData.end(), data.begin(), data.end());
         qualityControl += sensor.second->GetQualityControlBit();
     }
