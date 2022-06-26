@@ -923,6 +923,12 @@ void CoreController::HandleSensorConnectionRequest(std::string sensorId, std::st
     }
 }
 
+std::string CoreController::GenerateClimateMessage_5Min(std::string startTime, std::string endTime)
+{
+    
+}
+
+
 std::string CoreController::GenerateClimateMessage(std::string startTime, std::string endTime)
 {
     std::vector<std::string> climateData;
