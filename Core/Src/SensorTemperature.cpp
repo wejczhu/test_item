@@ -312,11 +312,6 @@ std::vector<std::string> SensorTemperature::CheckMissingData(std::string startTi
         }
     }
 
-    for(auto i : missData)
-    {
-        std::cout << "missdata: " << i << std::endl;
-    }
-
     return missData;
 }
 
@@ -368,6 +363,7 @@ std::vector<std::string> SensorTemperature::CalculateData_5Min(std::string start
     }
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
+        // Check if column 4 is empty or null
         if (sqlite3_column_text(stmt, 4) == NULL)
         {
             AAA5i = "///";

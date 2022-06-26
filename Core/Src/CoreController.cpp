@@ -924,8 +924,32 @@ void CoreController::HandleSensorConnectionRequest(std::string sensorId, std::st
 }
 
 std::string CoreController::GenerateClimateMessage_5Min(std::string startTime, std::string endTime)
-{
-    
+{    
+    std::vector<std::string> climateData;
+    std::string Begin = "BG";
+    std::string End = "ED";
+    climateData.push_back(Begin);
+    climateData.push_back(Begin);
+    // Merge climateData and header
+    auto header = GenerateClimateMessageHeader();
+    climateData.insert(climateData.end(), header.begin(), header.end());
+    GenerateClimateMessageMain_5Min(startTime, endTime);
+    climateData.insert(climateData.end(), main.begin(), main.end());
+
+    // Calculate CRC
+    std::string finalMessage;
+    for(auto data : climateData)
+    {
+        finalMessage += data;
+        finalMessage += ",";
+    }
+
+    std::string CRC = std::to_string(ConvertToASCII(finalMessage));
+    finalMessage += CRC;
+    finalMessage += ",";
+    finalMessage += End;
+
+    return finalMessage;
 }
 
 
@@ -1020,6 +1044,24 @@ std::vector<std::string> CoreController::GenerateClimateMessageMain(std::string 
     return messageMain;
 }
 
+std::vector<std::string> CoreController::GenerateClimateMessageMain_5Min(std::string startTime, std::string endTime)
+{
+    std::vector<std::string> messageMain;
+    std::vector<std::string> messageMain_Measurement = GenerateClimateMessage_Measurement_5Min(startTime, endTime);
+    std::vector<std::string> messageMain_StatusInfo = GenerateClimateMessage_StatusInfo(startTime, endTime);
+    messageMain.insert(messageMain.end(), messageMain_Measurement.begin(), messageMain_Measurement.end());
+    std::cout << "finish to generate climate message main " << std::endl;
+
+    for(auto i : messageMain)
+    {
+        std::cout << i << std::endl;
+    }
+    return messageMain;
+}
+
+
+
+
 std::vector<std::string> CoreController::GenerateClimateMessage_Measurement(std::string startTime, std::string endTime)
 {
     std::vector<std::string> mainData;
@@ -1036,6 +1078,23 @@ std::vector<std::string> CoreController::GenerateClimateMessage_Measurement(std:
 
     return mainData;
 }
+
+std::vector<std::string> CoreController::GenerateClimateMessage_Measurement_5Min(std::string startTime, std::string entTime)
+{
+    std::vector<std::string> mainData;
+    std::string qualityControl;
+
+    for(auto sensor : mSensors)
+    {
+        auto data = sensor.second->CalculateData_5Min(startTime, endTime);
+        mainData.insert(mainData.end(), data.begin(), data.end());
+        qualityControl += sensor.second->GetQualityControlBit();
+    }
+
+    mainData.push_back(qualityControl);
+    return mainData;
+}
+
 
 std::vector<std::string> CoreController::GenerateClimateMessage_StatusInfo(std::string startTime, std::string endTime)
 {
