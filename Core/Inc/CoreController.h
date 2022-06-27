@@ -204,6 +204,11 @@ public:
 
     Sensor* GetSensorById(std::string sensorId);
 
+    void OnTimeEvent_SensorData();
+    void OnTimeEvent_SensorData_5Min();
+    std::string GenerateClimateMessage_5Min(std::string startTime, std::string endTime);
+    std::vector<std::string> GenerateClimateMessageMain_5Min(std::string startTime, std::string endTime);
+    std::vector<std::string> GenerateClimateMessage_Measurement_5Min(std::string startTime, std::string endTime);
 private:
     static CoreController *mInstance;
 

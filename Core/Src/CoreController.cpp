@@ -39,6 +39,7 @@ CoreController::CoreController()
     mTimer1Minute = new Timer(1, std::bind(&CoreController::OnTimeEvent_SensorData_1Min, this));
     mTimerStorage = new Timer(1, std::bind(&CoreController::OnTimeEvent_StorageData, this));
     mTimer1Hour = new Timer(1, std::bind(&CoreController::OnTimeEvent_SensorData_1Hour,this));
+    mTimer5Minute = new Timer(1, std::bind(&CoreController::OnTimeEvent_SensorData_5Min, this));
     //CreateDatabaseTable();
 }
 
@@ -53,6 +54,7 @@ CoreController::~CoreController()
     delete mTimer1Minute;
     delete mTimerStorage;
     delete mTimer1Hour;
+    delete mTimer5Minute;
 
     mStorageUnit = nullptr;
     mUartUserSensor = nullptr;
@@ -63,6 +65,7 @@ CoreController::~CoreController()
     mTimer1Minute = nullptr;
     mTimerStorage = nullptr;
     mTimer1Hour = nullptr;
+    mTimer5Minute = nullptr;
 }
 
 void CoreController::CreateDatabaseTable()
@@ -181,6 +184,7 @@ std::string CoreController::GetSystemTime()
 
     std::stringstream minute;
     if(dt->tm_min < 10)
+
     {
         minute << "0" << dt->tm_min;
     }
@@ -683,6 +687,62 @@ void CoreController::OnTimeEvent_SensorData_1Min()
     }
 }
 
+void CoreController::OnTimeEvent_SensorData_5Min()
+{
+    // Get current time
+    std::string currentTime = RemoveNonNumeric(GetSystemDateAndTime());
+
+    // Check if minute can be devided by 5
+    std::string second = currentTime.substr(currentTime.size() - 2, 2);
+    std::string minute = currentTime.substr(currentTime.size() - 4, 2);
+    std::string hour = currentTime.substr(currentTime.size() - 6, 2);
+
+    if(!m5MinuteFinish)
+    {
+        if(second == "00")
+        {
+            if(minute == "00" || minute == "05" || minute == "10" || minute == "15" || minute == "20" || minute == "25" || minute == "30" || minute == "35" || minute == "40" || minute == "45" || minute == "50" || minute == "55")
+            {
+                std::cout << "Start to calculate 5 min data" << std::endl;
+
+
+                // Get time of 5 min ago
+                time_t now = time(0);
+                struct tm *dt = localtime(&now);
+                dt->tm_min -= 5;
+                time_t then = mktime(dt);
+                char buf[80];
+                strftime(buf, sizeof(buf), "%Y%m%d%H%M%S", dt);
+                // convert buf to string
+                std::string time_5min_ago(buf);
+
+                std::string startTime = time_5min_ago;
+                std::string endTime = currentTime;
+
+                std::string climateData = GenerateClimateMessage_5Min(startTime, endTime);
+                std::cout << "start to send data" << std::endl;
+                mUartUserCommand->SendData(climateData);
+
+                // Store 5 min data into database
+                InsertData(currentTime, climateData, "005");
+            
+                m5MinuteFinish = true;
+            }
+        }
+    }
+    else
+    {
+        if(second == "05")
+        {
+            if(minute == "00" || minute == "05" || minute == "10" || minute == "15" || minute == "20" || minute == "25" || minute == "30" || minute == "35" || minute == "40" || minute == "45" || minute == "50" || minute == "55")
+            {
+                m5MinuteFinish = false;
+            }
+        }
+    }
+}
+
+
 void CoreController::OnTimeEvent_SensorData_1Hour()
 {
     // Get current time
@@ -933,7 +993,8 @@ std::string CoreController::GenerateClimateMessage_5Min(std::string startTime, s
     // Merge climateData and header
     auto header = GenerateClimateMessageHeader();
     climateData.insert(climateData.end(), header.begin(), header.end());
-    GenerateClimateMessageMain_5Min(startTime, endTime);
+    std::vector<std::string> main = GenerateClimateMessageMain_5Min(startTime, endTime);
+
     climateData.insert(climateData.end(), main.begin(), main.end());
 
     // Calculate CRC
@@ -943,7 +1004,7 @@ std::string CoreController::GenerateClimateMessage_5Min(std::string startTime, s
         finalMessage += data;
         finalMessage += ",";
     }
-
+    std::cout << "the 111111111111111111" << std::endl;
     std::string CRC = std::to_string(ConvertToASCII(finalMessage));
     finalMessage += CRC;
     finalMessage += ",";
@@ -1046,21 +1107,15 @@ std::vector<std::string> CoreController::GenerateClimateMessageMain(std::string 
 
 std::vector<std::string> CoreController::GenerateClimateMessageMain_5Min(std::string startTime, std::string endTime)
 {
-    std::vector<std::string> messageMain;
+
     std::vector<std::string> messageMain_Measurement = GenerateClimateMessage_Measurement_5Min(startTime, endTime);
     std::vector<std::string> messageMain_StatusInfo = GenerateClimateMessage_StatusInfo(startTime, endTime);
-    messageMain.insert(messageMain.end(), messageMain_Measurement.begin(), messageMain_Measurement.end());
-    std::cout << "finish to generate climate message main " << std::endl;
+    std::vector<std::string> messageMain;
+    //messageMain.insert(messageMain.end(), messageMain_Measurement.begin(), messageMain_Measurement.end());
+    std::cout << "finish to generate climate message for 5 minutes " << std::endl;
 
-    for(auto i : messageMain)
-    {
-        std::cout << i << std::endl;
-    }
     return messageMain;
 }
-
-
-
 
 std::vector<std::string> CoreController::GenerateClimateMessage_Measurement(std::string startTime, std::string endTime)
 {
@@ -1079,7 +1134,7 @@ std::vector<std::string> CoreController::GenerateClimateMessage_Measurement(std:
     return mainData;
 }
 
-std::vector<std::string> CoreController::GenerateClimateMessage_Measurement_5Min(std::string startTime, std::string entTime)
+std::vector<std::string> CoreController::GenerateClimateMessage_Measurement_5Min(std::string startTime, std::string endTime)
 {
     std::vector<std::string> mainData;
     std::string qualityControl;
