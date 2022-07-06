@@ -11,10 +11,15 @@ CommandDataHandler::CommandDataHandler(CoreController* controller)
 void CommandDataHandler::ParseData(std::vector<std::string> data, std::string originalData)
 {
     std::cout << "receive data: " << originalData << std::endl;
-    string command = data[0];
 
-    //Get last 2 char of command
-    //string last2char = command.substr(command.length() - 2, 2);
+    for(std::string& i : data)
+    {
+        // trim data from start and end
+        i.erase(0, i.find_first_not_of(" \n\r\t"));
+        i.erase(i.find_last_not_of(" \n\r\t")+1);
+    }
+
+    string command = data[0];
 
     // compare command with command
     if(command.compare(std::string(COMMAND_SET_COM_PARAMETER)) == 0)
@@ -23,7 +28,7 @@ void CommandDataHandler::ParseData(std::vector<std::string> data, std::string or
     }
     else if(command.compare(std::string(COMMAND_AUTO_CHECK)) == 0)
     {
-        //mController->
+        mController->AutoCheck();
     }
     else if(command.compare(std::string(COMMAND_HELP)) == 0)
     {

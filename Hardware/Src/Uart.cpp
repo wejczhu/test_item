@@ -1,7 +1,5 @@
 // Copyright (C) 2022 - All Rights Reserved
 
-// Authors: Wei Jianxing <Jx.Wei@outlook.com>
-
 #include "Uart.h"
 
 #include <cstdio>
@@ -69,6 +67,142 @@ bool SerialPort::SetBaudRate(speed_t baudRate)
     return true;
 }
 
+bool SerialPort::SetParity(Parity parity)
+{
+    mParity = parity;
+    if(mState == State::OPEN)
+    {
+        ConfigureTermios();
+    }
+    
+    return true;
+}
+
+bool SerialPort::SetNumStopBits(NumStopBits numStopBits)
+{
+    mNumStopBits = numStopBits;
+    if(mState == State::OPEN)
+    {
+        ConfigureTermios();
+    }
+    
+    return true;
+}
+
+bool SerialPort::SetAllConfig(std::string baudRate, std::string parity, std::string numDataBits, std::string numStopBits)
+{
+    // Convert baudrate to enum BaudRate
+    BaudRate newBaudRate = BaudRate::B_0;
+    Parity newParity = Parity::NONE;
+    NumDataBits newNumDataBits = NumDataBits::EIGHT;
+    NumStopBits newNumStopBits = NumStopBits::ONE;
+
+    std::cout << baudRate << std::endl;
+    std::cout << parity << std::endl;
+    std::cout << numDataBits << std::endl;
+    std::cout << numStopBits << std::endl;
+
+    if(baudRate == "1200")
+    {
+        newBaudRate = BaudRate::B_1200;
+    }
+    else if(baudRate == "2400")
+    {
+        newBaudRate = BaudRate::B_2400;
+    }
+    else if(baudRate == "4800")
+    {
+        newBaudRate = BaudRate::B_4800;
+    }
+    else if(baudRate == "9600")
+    {
+        newBaudRate = BaudRate::B_9600;
+    }
+    else if(baudRate == "19200")
+    {
+        newBaudRate = BaudRate::B_19200;
+    }
+    else if(baudRate == "38400")
+    {
+        newBaudRate = BaudRate::B_38400;
+    }
+    else if(baudRate == "57600")
+    {
+        newBaudRate = BaudRate::B_57600;
+    }
+    else if(baudRate == "115200")
+    {
+        newBaudRate = BaudRate::B_115200;
+    }
+    else
+    {
+        throw std::runtime_error("Invalid baudrate");
+    }
+
+
+    if(parity == "N")
+    {
+        newParity = Parity::NONE;
+    }
+    else if(parity == "E")
+    {
+        newParity = Parity::EVEN;
+    }
+    else if(parity == "O")
+    {
+        newParity = Parity::ODD;
+    }
+    else
+    {
+        throw std::runtime_error("Invalid parity");
+    }
+
+    if(numDataBits == "5")
+    {
+        newNumDataBits = NumDataBits::FIVE;
+    }
+    else if(numDataBits == "6")
+    {
+        newNumDataBits = NumDataBits::SIX;
+    }
+    else if(numDataBits == "7")
+    {
+        newNumDataBits = NumDataBits::SEVEN;
+    }
+    else if(numDataBits == "8")
+    {
+        newNumDataBits = NumDataBits::EIGHT;
+    }
+    else
+    {
+        throw std::runtime_error("Invalid number of data bits");
+    }
+
+    if(numStopBits == "1")
+    {
+        newNumStopBits = NumStopBits::ONE;
+    }
+    else if(numStopBits == "2")
+    {
+        newNumStopBits = NumStopBits::TWO;
+    }
+    else
+    {
+        throw std::runtime_error("Invalid number of stop bits");
+    }
+
+    mBaudRateStandard = newBaudRate;
+    mParity = newParity;
+    mNumDataBits = newNumDataBits;
+    mNumStopBits = newNumStopBits;
+
+    if(mState == State::OPEN)
+    {
+        ConfigureTermios();
+    }
+    return true;
+}
+
 bool SerialPort::Open()
 {
     if(mDevice.empty()) {
@@ -111,9 +245,7 @@ void SerialPort::SetTimeout(int32_t timeout_ms) {
 
     }
         //THROW_EXCEPT(std::string() + __PRETTY_FUNCTION__ + " called while state == OPEN.");
-
     mTimeout = timeout_ms;
-    std::cout << "Set time out : " << mTimeout << std::endl;
 }
 
 void SerialPort::ConfigureTermios()
@@ -409,20 +541,68 @@ speed_t SerialPort::GetBaudRate()
 // Calculate the NumDataBits properly
 tcflag_t SerialPort::GetNumDataBits()
 {
-    termios2 tty = GetTermios2();
-    return tty.c_cflag & CSIZE;
+    switch(mNumDataBits)
+    {
+        case NumDataBits::FIVE:
+            return 5;
+            break;
+        case NumDataBits::SIX:
+            return 6;
+            break;
+        case NumDataBits::SEVEN:
+            return 7;
+            break;
+        case NumDataBits::EIGHT:
+            return 8;
+            break;
+        default:
+            return 0;
+            break;
+            //THROW_EXCEPT("NumDataBits value not supported!");
+    }
+
+    return 0;
 }
 
-tcflag_t SerialPort::GetParity()
+std::string SerialPort::GetParity()
 {
-    termios2 tty = GetTermios2();
-    return tty.c_cflag & PARENB;
+    switch(mParity)
+    {
+        case Parity::NONE:
+            return "N";
+            break;
+        case Parity::EVEN:
+            return "E";
+            break;
+        case Parity::ODD:
+            return "O";
+            break;
+        default:
+            return "N";
+            break;
+            //THROW_EXCEPT("Parity value not supported!");
+    }
+
+    return "N";
 }
 
 tcflag_t SerialPort::GetNumStopBits()
 {
-    termios2 tty = GetTermios2();
-    return tty.c_cflag & CSTOPB;
+    switch(mNumStopBits)
+    {
+        case NumStopBits::ONE:
+            return 1;
+            break;
+        case NumStopBits::TWO:
+            return 2;
+            break;
+        default:
+            return 0;
+            break;
+            //THROW_EXCEPT("NumStopBits value not supported!");
+    }
+
+    return 0;
 }
 
 } // namespace LinuxSerial

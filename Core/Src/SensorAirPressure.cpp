@@ -190,9 +190,19 @@ std::string SensorAirPressure::GetQualityControlBit()
     return "0000";
 }
 
+std::string SensorAirPressure::GetQualityControlBit_5Min()
+{
+    return "0";
+}
+
 uint8_t SensorAirPressure::GetNumberOfMeasureElement()
 {
     return 5;
+}
+
+uint8_t SensorAirPressure::GetNumberOfMeasureElement_5Min()
+{
+    return 1;
 }
 
 uint8_t SensorAirPressure::GetNumberOfEquipmentStatus()

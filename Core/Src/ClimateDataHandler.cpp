@@ -12,6 +12,7 @@ void ClimateDataHandler::HandleClimateData(std::vector<std::string> data, std::s
     // Check id number from data
     std::string sensorId = data[8];
 
+    mController->SetLastSensor(sensorId);
     // Search for sensor id in sensor list
     Sensor* sensor = mController->GetSensorById(sensorId);
     if(sensor == nullptr)

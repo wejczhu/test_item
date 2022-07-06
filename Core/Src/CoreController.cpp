@@ -21,12 +21,16 @@ CoreController::CoreController()
 , mTimer5Minute(nullptr)
 , mTimer1Hour(nullptr)
 , mTimerStorage(nullptr)
+, mTimerTimeCalibration(nullptr)
 , mIsAutoSend(true)
 , m1MinuteFinish(false)
 , m5MinuteFinish(false)
 , m1HourFinish(false)
 , mStorageFinish(false)
 , mTimeCalibrationFinish(false)
+, mTimerWatchdog(nullptr)
+, mLastSensor("001")
+, mWatchdog()
 {
     mStorageUnit = new DataStorageUnit();
 
@@ -40,6 +44,8 @@ CoreController::CoreController()
     mTimerStorage = new Timer(1, std::bind(&CoreController::OnTimeEvent_StorageData, this));
     mTimer1Hour = new Timer(1, std::bind(&CoreController::OnTimeEvent_SensorData_1Hour,this));
     mTimer5Minute = new Timer(1, std::bind(&CoreController::OnTimeEvent_SensorData_5Min, this));
+    mTimerTimeCalibration = new Timer(1, std::bind(&CoreController::OnTimeEvent_Time_Calibration, this));
+    mTimerWatchdog = new Timer(1, std::bind(&CoreController::FeedDog, this));
     //CreateDatabaseTable();
 }
 
@@ -55,6 +61,7 @@ CoreController::~CoreController()
     delete mTimerStorage;
     delete mTimer1Hour;
     delete mTimer5Minute;
+    delete mTimerTimeCalibration;
 
     mStorageUnit = nullptr;
     mUartUserSensor = nullptr;
@@ -66,6 +73,7 @@ CoreController::~CoreController()
     mTimerStorage = nullptr;
     mTimer1Hour = nullptr;
     mTimer5Minute = nullptr;
+    mTimerTimeCalibration = nullptr;
 }
 
 void CoreController::CreateDatabaseTable()
@@ -324,17 +332,34 @@ void CoreController::HandleSetCom(std::vector<std::string> command)
     {
         std::string baudRate = std::to_string(mUartUserCommand->GetSerialPort()->GetBaudRate());
         std::string numBit = std::to_string(mUartUserCommand->GetSerialPort()->GetNumDataBits());
-        std::string parity = std::to_string(mUartUserCommand->GetSerialPort()->GetParity());
+        std::string parity = mUartUserCommand->GetSerialPort()->GetParity();
         std::string stopBit = std::to_string(mUartUserCommand->GetSerialPort()->GetNumStopBits());
 
         std::string totalInfo = baudRate + ", " + numBit + ", " + parity + ", " + stopBit;
         mUartUserCommand->SendData(totalInfo);
     }
+    else
+    {
+        std::string baudRate = command[1];
+        std::string numBit = command[2];
+        std::string parity = command[3];
+        std::string stopBit = command[4];
+
+        bool ret = mUartUserCommand->GetSerialPort()->SetAllConfig(baudRate, parity, numBit, stopBit);
+        if(ret)
+        {
+            mUartUserCommand->SendData(SET_SUCCESS);
+        }
+        else
+        {
+            mUartUserCommand->SendData(SET_FAILURE);
+        }
+    }
 }
 
 void CoreController::ShowHelp()
 {
-    std::string helpInfo = "This function is work in progress";
+    std::string helpInfo = "SETCOM, AUTOCHECK, HELP, QZ, ST, DI, ID, LAT, LONG, DATA, TIME, DATETIME, FTD, DOWN, READDATA, SETCOMWAY";
     mUartUserCommand->SendData(helpInfo);
 }
 
@@ -472,6 +497,9 @@ void CoreController::HandleLongitude(std::vector<std::string> command)
 
 void CoreController::HandleHistoryDownload(std::vector<std::string> command)
 {
+
+    // For filter 005 and 160, the data stored in core controller's database,
+    // for filter 001, the data stored in sensor's database.
     std::vector<std::string> history;
     if(command.size() == 5)
     {
@@ -486,6 +514,7 @@ void CoreController::HandleHistoryDownload(std::vector<std::string> command)
         std::vector<std::string> sensorData;
         for(auto sensor : mSensors)
         {
+            std::cout << "get history data from sensor: " << sensor.first << std::endl;
             sensorData = sensor.second->GetSensorData(start, end, filter);
             history.insert(history.end(), sensorData.begin(), sensorData.end());
             sensorData.clear();
@@ -503,20 +532,7 @@ void CoreController::HandleHistoryDownload(std::vector<std::string> command)
         std::string end = RemoveNonNumeric(endDate + endTime);
         std::string filter = command[5];
 
-        if(filter == "005")
-        {
-            std::vector<std::string> sensorData;
-            for(auto sensor : mSensors)
-            {
-                sensorData = sensor.second->GetSensorData(start, end, filter);
-                history.insert(history.end(), sensorData.begin(), sensorData.end());
-                sensorData.clear();
-            }
-        }
-        else if(filter == "160")
-        {
-            history = mStorageUnit->GetClimateDataBetweenTime(start, end, filter);
-        }
+        history = mStorageUnit->GetClimateDataBetweenTime(start, end, filter);
     }
     else
     {
@@ -532,14 +548,32 @@ void CoreController::HandleHistoryDownload(std::vector<std::string> command)
 
 void CoreController::HandleLatestData(std::vector<std::string> command)
 {
+    // TODO:
+    // If sensor is not registered, history data should be still found from database.
     std::vector<std::string> history;
+
     if(command.size() == 1)
     {
-        history = mStorageUnit->GetLatestClimateDataByFilter("001");
+        // If command size is 1, means the filer id 001 by default
+        std::string sensorId = GetLastSensor();
+        std::cout << "the last sensor is : " << sensorId << std::endl;
+        // find sensor according to the sensor id
+        auto sensor = mSensors.find(sensorId);
+        if(sensor == mSensors.end())
+        {
+            mUartUserCommand->SendData("No valid data found!");
+            return;
+        }
+        else
+        {
+            history = sensor->second->GetLatestData();
+        }
     }
     else if(command.size() == 2)
     {
-        history = mStorageUnit->GetLatestClimateDataByFilter(command[1]);
+        // If size is 2, means the filter id is 005 or 160
+        std::string filter = command[1];
+        history = mStorageUnit->GetLatestClimateDataByFilter(filter);
     }
     else
     {
@@ -627,6 +661,7 @@ void CoreController::HandleSetComWay(std::vector<std::string> command)
         {
             mIsAutoSend = false;
         }
+        mUartUserCommand->SendData(SET_SUCCESS);
     }
     else
     {
@@ -721,7 +756,11 @@ void CoreController::OnTimeEvent_SensorData_5Min()
 
                 std::string climateData = GenerateClimateMessage_5Min(startTime, endTime);
                 std::cout << "start to send data" << std::endl;
-                mUartUserCommand->SendData(climateData);
+
+                if(mIsAutoSend)
+                {
+                    mUartUserCommand->SendData(climateData);
+                }
 
                 // Store 5 min data into database
                 InsertData(currentTime, climateData, "005");
@@ -761,8 +800,11 @@ void CoreController::OnTimeEvent_SensorData_1Hour()
             auto startTime = currentTime.substr(0, currentTime.size() - 4) + "0000";
             auto endTime = currentTime.substr(0, currentTime.size() - 4) + "5959";
             std::string climateData = GenerateClimateMessage(startTime, endTime);
-            mUartUserCommand->SendData(climateData);
 
+            if(mIsAutoSend)
+            {
+                mUartUserCommand->SendData(climateData);
+            }
             // Store 1 hour data into database
             InsertData(currentTime, climateData, "160");
             
@@ -989,9 +1031,8 @@ std::string CoreController::GenerateClimateMessage_5Min(std::string startTime, s
     std::string Begin = "BG";
     std::string End = "ED";
     climateData.push_back(Begin);
-    climateData.push_back(Begin);
     // Merge climateData and header
-    auto header = GenerateClimateMessageHeader();
+    auto header = GenerateClimateMessageHeader_5Min();
     climateData.insert(climateData.end(), header.begin(), header.end());
     std::vector<std::string> main = GenerateClimateMessageMain_5Min(startTime, endTime);
 
@@ -1004,7 +1045,7 @@ std::string CoreController::GenerateClimateMessage_5Min(std::string startTime, s
         finalMessage += data;
         finalMessage += ",";
     }
-    std::cout << "the 111111111111111111" << std::endl;
+
     std::string CRC = std::to_string(ConvertToASCII(finalMessage));
     finalMessage += CRC;
     finalMessage += ",";
@@ -1024,6 +1065,8 @@ std::string CoreController::GenerateClimateMessage(std::string startTime, std::s
     auto header = GenerateClimateMessageHeader();
     climateData.insert(climateData.end(), header.begin(), header.end());
     auto main = GenerateClimateMessageMain(startTime, endTime);
+    GenerateClimateMessageMain(startTime, endTime);
+
     std::cout << "start to insert data " << std::endl;
     climateData.insert(climateData.end(), main.begin(), main.end());
 
@@ -1048,14 +1091,14 @@ std::vector<std::string> CoreController::GenerateClimateMessageHeader()
     std::vector<std::string> header;
     auto value = mStorageUnit->ReadJsonFile("controller_config");
 
-    std::string Header_Version_Number = value["version_number"].asString();
-    std::string Header_Zone_Number = value["equipment_zone_number"].asString();
-    std::string Header_Latitude = value["latitude"].asString();
-    std::string Header_Longitude = value["longitude"].asString();
-    std::string Header_Height = value["height"].asString();
-    std::string Header_Service_Type = value["service_type"].asString();
-    std::string Header_Equipment_Bit = value["equipment_bit"].asString();
-    std::string Header_Equipment_Id = value["equipment_id"].asString();
+    std::string Header_Version_Number = value["controller_config"]["version_number"].asString();
+    std::string Header_Zone_Number = value["controller_config"]["equipment_zone_number"].asString();
+    std::string Header_Latitude = value["controller_config"]["latitude"].asString();
+    std::string Header_Longitude = value["controller_config"]["longitude"].asString();
+    std::string Header_Height = value["controller_config"]["height"].asString();
+    std::string Header_Service_Type = value["controller_config"]["service_type"].asString();
+    std::string Header_Equipment_Bit = value["controller_config"]["equipment_bit"].asString();
+    std::string Header_Equipment_Id = value["controller_config"]["equipment_id"].asString();
     std::string Header_Time = RemoveNonNumeric(GetSystemDateAndTime());
     std::string Header_Frame = "160";
 
@@ -1090,18 +1133,63 @@ std::vector<std::string> CoreController::GenerateClimateMessageHeader()
     return header;
 }
 
+std::vector<std::string> CoreController::GenerateClimateMessageHeader_5Min()
+{
+    std::vector<std::string> header;
+    auto value = mStorageUnit->ReadJsonFile("controller_config");
+
+    std::string Header_Version_Number = value["controller_config"]["version_number"].asString();
+    std::string Header_Zone_Number = value["controller_config"]["equipment_zone_number"].asString();
+    std::string Header_Latitude = value["controller_config"]["latitude"].asString();
+    std::string Header_Longitude = value["controller_config"]["longitude"].asString();
+    std::string Header_Height = value["controller_config"]["height"].asString();
+    std::string Header_Service_Type = value["controller_config"]["service_type"].asString();
+    std::string Header_Equipment_Bit = value["controller_config"]["equipment_bit"].asString();
+    std::string Header_Equipment_Id = value["controller_config"]["equipment_id"].asString();
+    std::string Header_Time = RemoveNonNumeric(GetSystemDateAndTime());
+    std::string Header_Frame = "005";
+
+    header.push_back(Header_Version_Number);
+    header.push_back(Header_Zone_Number);
+    header.push_back(Header_Latitude);
+    header.push_back(Header_Longitude);
+    header.push_back(Header_Height);
+    header.push_back(Header_Service_Type);
+    header.push_back(Header_Equipment_Bit);
+    header.push_back(Header_Equipment_Id);
+    header.push_back(Header_Time);
+    header.push_back(Header_Frame);
+
+    // Calculate number of measure elements
+    uint8_t numberOfMeasureElement = 0;
+    for(auto sensor : mSensors)
+    {
+        numberOfMeasureElement += sensor.second->GetNumberOfMeasureElement_5Min();
+    }
+
+    header.push_back(std::to_string(numberOfMeasureElement));
+
+    // 
+    uint8_t numberOfEquipmentStatus = 0;
+    for(auto sensor : mSensors)
+    {
+        numberOfEquipmentStatus += sensor.second->GetNumberOfEquipmentStatus();
+    }
+    header.push_back(std::to_string(numberOfEquipmentStatus));
+
+    return header;
+
+}
+
 std::vector<std::string> CoreController::GenerateClimateMessageMain(std::string startTime, std::string endTime)
 {
     std::vector<std::string> messageMain;
     std::vector<std::string> messageMain_Measurement = GenerateClimateMessage_Measurement(startTime, endTime);
     std::vector<std::string> messageMain_StatusInfo = GenerateClimateMessage_StatusInfo(startTime, endTime);
-    messageMain.insert(messageMain.end(), messageMain_Measurement.begin(), messageMain_Measurement.end());
-    std::cout << "finish to generate climate message main " << std::endl;
 
-    for(auto i : messageMain)
-    {
-        std::cout << i << std::endl;
-    }
+    messageMain.insert(messageMain.end(), messageMain_Measurement.begin(), messageMain_Measurement.end());
+    messageMain.insert(messageMain.end(), messageMain_StatusInfo.begin(), messageMain_StatusInfo.end());
+
     return messageMain;
 }
 
@@ -1111,7 +1199,9 @@ std::vector<std::string> CoreController::GenerateClimateMessageMain_5Min(std::st
     std::vector<std::string> messageMain_Measurement = GenerateClimateMessage_Measurement_5Min(startTime, endTime);
     std::vector<std::string> messageMain_StatusInfo = GenerateClimateMessage_StatusInfo(startTime, endTime);
     std::vector<std::string> messageMain;
-    //messageMain.insert(messageMain.end(), messageMain_Measurement.begin(), messageMain_Measurement.end());
+    messageMain.insert(messageMain.end(), messageMain_Measurement.begin(), messageMain_Measurement.end());
+    messageMain.insert(messageMain.end(), messageMain_StatusInfo.begin(), messageMain_StatusInfo.end());
+
     std::cout << "finish to generate climate message for 5 minutes " << std::endl;
 
     return messageMain;
@@ -1126,9 +1216,11 @@ std::vector<std::string> CoreController::GenerateClimateMessage_Measurement(std:
     {
         auto data = sensor.second->CalculateData(startTime, endTime);
         mainData.insert(mainData.end(), data.begin(), data.end());
+        //mainData.insert(mainData.end(), data.begin(), data.end());
         qualityControl += sensor.second->GetQualityControlBit();
     }
 
+    std::cout << "finish to get measurement " << std::endl;
     mainData.push_back(qualityControl);
 
     return mainData;
@@ -1156,9 +1248,10 @@ std::vector<std::string> CoreController::GenerateClimateMessage_StatusInfo(std::
     std::vector<std::string> statusInfo;
     for(auto sensor : mSensors)
     {
-        auto data = sensor.second->GetStatusInfo(startTime, endTime);
+        std::vector<std::string> data = sensor.second->GetStatusInfo(startTime, endTime);
         statusInfo.insert(statusInfo.end(), data.begin(), data.end());
     }
+    return statusInfo;
 }
 
 // Check if sensor is valid
@@ -1181,6 +1274,7 @@ std::string CoreController::CalculateMD5Sum(std::string originalData)
 bool CoreController::AutoCheck()
 {
     // Todo: check if sensor is valid
+    mUartUserCommand->SendData(SET_SUCCESS);
     return true;
 }
 
@@ -1277,4 +1371,19 @@ Sensor* CoreController::GetSensorById(std::string sensorId)
     }
 
     return nullptr;
+}
+
+std::string CoreController::GetLastSensor()
+{
+    return mLastSensor;
+}
+
+void CoreController::SetLastSensor(std::string sensorId)
+{
+    mLastSensor = sensorId;
+}
+
+void CoreController::FeedDog()
+{
+    mWatchdog.Feed();
 }

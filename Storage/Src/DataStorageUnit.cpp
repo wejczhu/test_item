@@ -86,9 +86,32 @@ std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string 
     return data;
 }
 
-std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string time1, std::string time2, std::string id)
+// std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string time1, std::string time2, std::string id)
+// {
+//     std::cout << "core controller: download history data from " << time1 << " to " << time2 << " and the filter is : " << id << std::endl;
+//     std::string sql = "SELECT * FROM CoreController WHERE TIME BETWEEN '" + time1 + "' AND '" + time2 + "' AND ID = " + id;
+//     sqlite3_stmt* t_statement;
+//     int rc = sqlite3_prepare_v2(mDatabase, sql.c_str(), -1, &t_statement, NULL);
+//     if (rc != SQLITE_OK)
+//     {
+//         std::cout << "SQL error: " << sqlite3_errmsg(mDatabase) << std::endl;
+//         sqlite3_close(mDatabase);
+//     }
+
+//     // iterate over the columns to get the data
+//     std::vector<std::string> data;
+//     while (sqlite3_step(t_statement) == SQLITE_ROW)
+//     {
+//         auto temp = sqlite3_column_text(t_statement, 2);
+//         data.push_back(std::string(reinterpret_cast<const char*>(temp)));
+//     }
+
+//     return data;
+// }
+
+std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string time1, std::string time2, std::string filter)
 {
-    std::string sql = "SELECT * FROM CoreController WHERE TIME BETWEEN '" + time1 + "' AND '" + time2 + "' AND ID = " + id;
+    std::string sql = "SELECT * FROM CoreController WHERE TIME BETWEEN '" + time1 + "' AND '" + time2 + "' AND FILTER = " + filter;
     sqlite3_stmt* t_statement;
     int rc = sqlite3_prepare_v2(mDatabase, sql.c_str(), -1, &t_statement, NULL);
     if (rc != SQLITE_OK)
@@ -101,29 +124,7 @@ std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string 
     std::vector<std::string> data;
     while (sqlite3_step(t_statement) == SQLITE_ROW)
     {
-        auto temp = sqlite3_column_text(t_statement, 1);
-        data.push_back(std::string(reinterpret_cast<const char*>(temp)));
-    }
-
-    return data;
-}
-
-std::vector<std::string> DataStorageUnit::GetClimateDataBetweenTime(std::string time1, std::string time2, std::string id, std::string filter)
-{
-    std::string sql = "SELECT * FROM CoreController WHERE TIME BETWEEN '" + time1 + "' AND '" + time2 + "' AND ID = " + id + " AND FILTER = " + filter;
-    sqlite3_stmt* t_statement;
-    int rc = sqlite3_prepare_v2(mDatabase, sql.c_str(), -1, &t_statement, NULL);
-    if (rc != SQLITE_OK)
-    {
-        std::cout << "SQL error: " << sqlite3_errmsg(mDatabase) << std::endl;
-        sqlite3_close(mDatabase);
-    }
-
-    // iterate over the columns to get the data
-    std::vector<std::string> data;
-    while (sqlite3_step(t_statement) == SQLITE_ROW)
-    {
-        auto temp = sqlite3_column_text(t_statement, 1);
+        auto temp = sqlite3_column_text(t_statement, 2);
         data.push_back(std::string(reinterpret_cast<const char*>(temp)));
     }
 
@@ -145,7 +146,7 @@ std::vector<std::string> DataStorageUnit::GetLatestClimateDataByFilter(std::stri
     std::vector<std::string> data;
     while (sqlite3_step(t_statement) == SQLITE_ROW)
     {
-        auto temp = sqlite3_column_text(t_statement, 1);
+        auto temp = sqlite3_column_text(t_statement, 2);
         data.push_back(std::string(reinterpret_cast<const char*>(temp)));
     }
 
@@ -169,7 +170,7 @@ bool DataStorageUnit::GetLatestClimateDataByTimeAndId(std::string time, std::str
     // iterate over the columns to get the data
     while (sqlite3_step(t_statement) == SQLITE_ROW)
     {
-        auto temp = sqlite3_column_text(t_statement, 1);
+        auto temp = sqlite3_column_text(t_statement, 2);
         data.push_back(std::string(reinterpret_cast<const char*>(temp)));
     }
 

@@ -119,10 +119,12 @@ public:
     tcflag_t GetNumDataBits();
 
     // Get the parity
-    tcflag_t GetParity();
+    std::string GetParity();
 
     // Get the number of stop bits
     tcflag_t GetNumStopBits();
+
+    bool SetAllConfig(std::string baudRate, std::string parity, std::string numDataBits, std::string numStopBits);
 
 private:
     void ConfigureTermios();

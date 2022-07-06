@@ -21,6 +21,10 @@ public:
     std::vector<std::string> GetSensorData(std::string startTime, std::string endTime, std::string filter) override;
     std::vector<std::string> CalculateData_5Min(std::string startTime, std::string endTime) override;
 
+    uint8_t GetNumberOfMeasureElement_5Min() override;
+    std::string GetQualityControlBit_5Min() override;
+ 
+
     // Command
     void Command_ReadData() override;
 private:

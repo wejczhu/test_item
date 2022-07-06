@@ -12,6 +12,7 @@
 #include "Sensor.h"
 #include "SensorAirPressure.h"
 #include "SensorTemperature.h"
+#include "Watchdog.h"
 
 #include <time.h>
 
@@ -209,13 +210,27 @@ public:
     std::string GenerateClimateMessage_5Min(std::string startTime, std::string endTime);
     std::vector<std::string> GenerateClimateMessageMain_5Min(std::string startTime, std::string endTime);
     std::vector<std::string> GenerateClimateMessage_Measurement_5Min(std::string startTime, std::string endTime);
+
+    std::vector<std::string> GenerateClimateMessageHeader_5Min();
+
+    std::string GetLastSensor();
+    void SetLastSensor(std::string sensorId);
+
+    void FeedDog();
+
 private:
     static CoreController *mInstance;
+
+    Watchdog mWatchdog;
+
+    std::string mLastSensor;
 
     Timer* mTimer1Minute;
     Timer* mTimer5Minute;
     Timer* mTimer1Hour;
     Timer* mTimerStorage;
+    Timer* mTimerTimeCalibration;
+    Timer* mTimerWatchdog;
 
     bool mIsAutoSend;
     bool m1MinuteFinish;

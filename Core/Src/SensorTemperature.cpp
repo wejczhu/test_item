@@ -170,7 +170,7 @@ std::vector<std::string> SensorTemperature::CalculateData(std::string startTime,
     {
         while (sqlite3_step(stmt) == SQLITE_ROW)
         {
-            if (sqlite3_column_text(stmt, 0) == NULL)
+            if (sqlite3_column_text(stmt, 2) == NULL)
             {
                 //std::string
                 AAAc = "///";
@@ -255,9 +255,19 @@ std::string SensorTemperature::GetQualityControlBit()
     return "000000";
 }
 
+std::string SensorTemperature::GetQualityControlBit_5Min()
+{
+    return "0";
+}
+
 uint8_t SensorTemperature::GetNumberOfMeasureElement()
 {
     return 6;
+}
+
+uint8_t SensorTemperature::GetNumberOfMeasureElement_5Min()
+{
+    return 1;
 }
 
 uint8_t SensorTemperature::GetNumberOfEquipmentStatus()
@@ -381,3 +391,4 @@ std::vector<std::string> SensorTemperature::CalculateData_5Min(std::string start
 
     return outputData;
 }
+
