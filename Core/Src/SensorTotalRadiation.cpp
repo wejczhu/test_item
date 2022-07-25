@@ -1,3 +1,7 @@
+// Copyright (C) 2022 - All Rights Reserved
+
+// Authors : Wei Jianxing <Jx.Wei@outlook.com>
+
 #include "SensorTotalRadiation.h"
 
 #include <iostream>
@@ -51,7 +55,6 @@ SensorTotalRadiation::SensorTotalRadiation(std::string equipmentId, DataStorageU
     {
         std::cout << "Table Sensor011 created successfully" << std::endl;
     }
-
 }
 
 void SensorTotalRadiation::StoreData(std::vector<std::string> data, std::string originalData)

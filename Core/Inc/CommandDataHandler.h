@@ -1,3 +1,8 @@
+/* Copyright (C) 2022 - All Rights Reserved
+//
+// Authors : Wei Jianxing <Jx.Wei@outlook.com>
+//
+*/
 #ifndef _COMMAND_DATA_HANDLER_H_
 #define _COMMAND_DATA_HANDLER_H_
 
@@ -7,6 +12,10 @@
 class CoreController;
 
 using namespace std;
+
+// Copyright (C) 2022 - All Rights Reserved
+
+// Authors : Wei Jianxing <Jx.Wei@outlook.com>
 
 class CommandDataHandler: public DataHandler
 {

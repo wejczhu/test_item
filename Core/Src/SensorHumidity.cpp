@@ -1,3 +1,7 @@
+// Copyright (C) 2022 - All Rights Reserved
+
+// Authors : Wei Jianxing <Jx.Wei@outlook.com>
+
 #include "SensorHumidity.h"
 
 SensorHumidity::SensorHumidity(std::string zoneNumber, std::string serviceType,

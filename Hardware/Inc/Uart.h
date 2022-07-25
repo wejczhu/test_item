@@ -1,4 +1,6 @@
-// Authors: Wei Jianxing <Jx.Wei@outlook.com>
+// Copyright (C) 2022 - All Rights Reserved
+
+// Authors : Wei Jianxing <Jx.Wei@outlook.com>
 
 #ifndef _SERIAL_PORT_H_
 #define _SERIAL_PORT_H_

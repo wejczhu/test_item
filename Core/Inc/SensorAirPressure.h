@@ -1,3 +1,7 @@
+// Copyright (C) 2022 - All Rights Reserved
+
+// Authors : Wei Jianxing <Jx.Wei@outlook.com>
+
 #ifndef _SENSOR_AIR_PRESSURE_H_
 #define _SENSOR_AIR_PRESSURE_H_
 
